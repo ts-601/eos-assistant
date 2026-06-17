@@ -175,6 +175,10 @@ body { display: flex; flex-direction: column; }
 .ibtn.voice.rec { background: var(--red); color: #fff; border-color: var(--red); }
 .ibtn.tts-toggle { background: var(--bg3); color: var(--text); border: 1px solid var(--border); opacity: 0.45; transition: opacity .15s, background .15s; }
 .ibtn.tts-toggle.active { background: var(--accent); color: #fff; border-color: var(--accent); opacity: 1; }
+#tts-voice-picker { display:none; position:absolute; bottom:60px; left:8px; background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:6px; z-index:100; min-width:220px; box-shadow:0 4px 16px #0006; }
+#tts-voice-picker.open { display:block; }
+#tts-voice-picker select { width:100%; background:var(--bg3); color:var(--text); border:1px solid var(--border); border-radius:5px; padding:5px 8px; font-size:13px; }
+#tts-voice-picker label { font-size:11px; color:var(--text-dim,#888); display:block; margin-bottom:4px; }
 
 .voice-wave { display:flex; align-items:center; gap:3px; height:36px; padding:0 6px; }
 .voice-wave span {
@@ -546,7 +550,13 @@ body { display: flex; flex-direction: column; }
     <div class="voice-wave" id="voice-wave-1" style="display:none">
       <span></span><span></span><span></span><span></span><span></span>
     </div>
-    <button class="ibtn tts-toggle" id="tts-btn" title="Ответ голосом" onclick="toggleTTS()">🔊</button>
+    <div style="position:relative">
+      <button class="ibtn tts-toggle" id="tts-btn" title="Ответ голосом" onclick="toggleTTS()">🔊</button>
+      <div id="tts-voice-picker">
+        <label>Голос:</label>
+        <select id="tts-voice-select" onchange="_ttsVoiceChanged()"></select>
+      </div>
+    </div>
     <input id="live-input" type="text" placeholder="Команда или вопрос…"
            onkeydown="if(event.key==='Enter')sendLive()">
     <button class="ibtn send" onclick="sendLive()">↑</button>
@@ -911,17 +921,87 @@ function _pinScheduled(area, text, schedule, cmdsToRun) {
 /* ══════════ TTS ══════════ */
 let _ttsEnabled = false;
 let _ttsUtterance = null;
+let _ttsSelectedVoice = null;
+let _ttsPressTimer = null;
 
-function toggleTTS() {
+function _ttsLoadVoices() {
+  const sel = document.getElementById('tts-voice-select');
+  if (!sel) return;
+  const voices = speechSynthesis.getVoices();
+  if (!voices.length) return;
+  sel.innerHTML = '';
+  // Сначала русские, потом остальные
+  const sorted = [...voices].sort((a, b) => {
+    const aRu = a.lang.startsWith('ru') ? 0 : 1;
+    const bRu = b.lang.startsWith('ru') ? 0 : 1;
+    return aRu - bRu;
+  });
+  sorted.forEach((v, i) => {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = `${v.name} (${v.lang})`;
+    opt.dataset.idx = voices.indexOf(v);
+    sel.appendChild(opt);
+  });
+  // Выбрать первый русский по умолчанию
+  if (!_ttsSelectedVoice) {
+    const ruVoice = voices.find(v => v.lang.startsWith('ru'));
+    _ttsSelectedVoice = ruVoice || voices[0];
+    const ruIdx = sorted.findIndex(v => v === _ttsSelectedVoice);
+    if (ruIdx >= 0) sel.selectedIndex = ruIdx;
+  }
+}
+
+function _ttsVoiceChanged() {
+  const sel = document.getElementById('tts-voice-select');
+  const voices = speechSynthesis.getVoices();
+  const sorted = [...voices].sort((a, b) => {
+    const aRu = a.lang.startsWith('ru') ? 0 : 1;
+    const bRu = b.lang.startsWith('ru') ? 0 : 1;
+    return aRu - bRu;
+  });
+  _ttsSelectedVoice = sorted[sel.selectedIndex] || null;
+  // Закрыть пикер через секунду
+  setTimeout(() => document.getElementById('tts-voice-picker').classList.remove('open'), 800);
+}
+
+function toggleTTS(e) {
+  // Долгое нажатие (>400ms) — открыть выбор голоса
+  // Короткое — вкл/выкл
   _ttsEnabled = !_ttsEnabled;
   const btn = document.getElementById('tts-btn');
   btn.classList.toggle('active', _ttsEnabled);
-  btn.title = _ttsEnabled ? 'Ответ голосом: ВКЛ' : 'Ответ голосом: ВЫКЛ';
-  if (!_ttsEnabled && _ttsUtterance) {
+  btn.title = _ttsEnabled ? 'Ответ голосом: ВКЛ (удержи для выбора голоса)' : 'Ответ голосом: ВЫКЛ';
+  if (!_ttsEnabled) {
     speechSynthesis.cancel();
     _ttsUtterance = null;
+    document.getElementById('tts-voice-picker').classList.remove('open');
   }
 }
+
+function _ttsLongPress() {
+  const picker = document.getElementById('tts-voice-picker');
+  _ttsLoadVoices();
+  picker.classList.toggle('open');
+}
+
+// Навешиваем долгое нажатие после загрузки
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.getElementById('tts-btn');
+  if (!btn) return;
+  btn.addEventListener('pointerdown', () => {
+    _ttsPressTimer = setTimeout(_ttsLongPress, 450);
+  });
+  btn.addEventListener('pointerup', () => clearTimeout(_ttsPressTimer));
+  btn.addEventListener('pointerleave', () => clearTimeout(_ttsPressTimer));
+  // Закрыть пикер при клике вне
+  document.addEventListener('pointerdown', e => {
+    const picker = document.getElementById('tts-voice-picker');
+    if (!picker.contains(e.target) && e.target.id !== 'tts-btn') {
+      picker.classList.remove('open');
+    }
+  });
+});
 
 function _speak(text) {
   if (!_ttsEnabled || !text) return;
@@ -930,15 +1010,12 @@ function _speak(text) {
   _ttsUtterance.lang = 'ru-RU';
   _ttsUtterance.rate = 1.05;
   _ttsUtterance.pitch = 1;
-  // Выбрать русский голос если есть
-  const voices = speechSynthesis.getVoices();
-  const ruVoice = voices.find(v => v.lang.startsWith('ru'));
-  if (ruVoice) _ttsUtterance.voice = ruVoice;
+  if (_ttsSelectedVoice) _ttsUtterance.voice = _ttsSelectedVoice;
   speechSynthesis.speak(_ttsUtterance);
 }
 
 // Предзагрузка голосов
-speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices();
+speechSynthesis.onvoiceschanged = () => { speechSynthesis.getVoices(); _ttsLoadVoices(); };
 
 /* ══════════ LIVE CHAT ══════════ */
 function appendMsg(container, text, who) {
