@@ -1,0 +1,1602 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>EOS Assistant</title>
+<style>
+:root {
+  --bg:      #0e0f11;
+  --bg2:     #16181c;
+  --bg3:     #1e2128;
+  --border:  #2a2d37;
+  --accent:  #4f8ef7;
+  --green:   #3dba6e;
+  --red:     #e05252;
+  --yellow:  #e0a840;
+  --text:    #d8dce8;
+  --dim:     #7a7f90;
+  --tab-h:   48px;
+  --safe-b:  env(safe-area-inset-bottom, 0px);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; background: var(--bg); color: var(--text); font-family: -apple-system, 'SF Pro Display', Helvetica, Arial, sans-serif; font-size: 15px; overscroll-behavior: none; }
+
+/* ── TABS ── */
+#tabs { display: flex; background: var(--bg2); border-bottom: 1px solid var(--border); height: var(--tab-h); flex-shrink: 0; }
+.tab { flex: 1; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 11px; color: var(--dim); gap: 4px; flex-direction: column; line-height: 1; border-bottom: 2px solid transparent; transition: color .15s, border-color .15s; }
+.tab .ti { font-size: 18px; }
+.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* ── PAGES ── */
+body { display: flex; flex-direction: column; }
+#content { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+.page { display: none; flex-direction: column; height: 100%; }
+.page.active { display: flex; }
+
+/* ════════════════════════════════
+   TAB 1  LIVE
+════════════════════════════════ */
+#pg-live { padding: 0; gap: 0; }
+
+/* ── LIVE HEADER ── */
+.live-header {
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  padding: 7px 14px;
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+}
+.show-name { font-size: 20px; font-weight: 700; color: var(--text); min-height: 24px; flex: 1; }
+.conn-stack {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 1px; flex-shrink: 0;
+}
+.conn-ip-port { font-size: 12px; color: var(--dim); font-family: 'SF Mono', monospace; }
+.conn-status-row { display: flex; align-items: center; gap: 5px; justify-content: flex-end; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--red); flex-shrink: 0; transition: background .4s; }
+.dot.ok { background: var(--green); }
+.conn-status-text { font-size: 11px; color: var(--dim); }
+
+/* ── CMD BAR ── */
+.cmd-bar {
+  background: var(--bg3);
+  border-bottom: 1px solid var(--border);
+  padding: 5px 10px 5px 14px;
+  flex-shrink: 0;
+}
+.cmd-bar-header { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.cmd-label { font-size: 10px; color: var(--dim); text-transform: uppercase; letter-spacing: .06em; }
+.cmd-line  { font-family: 'SF Mono', monospace; font-size: 13px; color: var(--yellow); min-height: 18px; margin-top: 2px; }
+.cmd-undo-btn {
+  font-size: 13px; font-weight: 700;
+  padding: 4px 14px; border-radius: 7px;
+  border: 1px solid var(--border);
+  background: var(--bg2); color: var(--text);
+  cursor: pointer; white-space: nowrap; flex-shrink: 0;
+}
+.cmd-undo-btn:active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+/* История CLI — растягиваемая */
+.cmd-history-wrap {
+  position: relative; margin-top: 3px;
+}
+.cmd-history {
+  height: 44px; min-height: 22px; max-height: 200px;
+  overflow-y: auto; display: flex; flex-direction: column-reverse;
+  gap: 1px;
+}
+.cmd-history-resize {
+  height: 6px; cursor: ns-resize; background: transparent;
+  border-top: 2px solid var(--border); margin-top: 2px;
+  border-radius: 2px;
+}
+.cmd-history-resize:hover { border-color: var(--accent); }
+.cmd-history-row {
+  display: flex; gap: 8px; font-family: 'SF Mono', monospace; font-size: 11px;
+  color: var(--dim); line-height: 1.4;
+}
+.cmd-history-row .cht { color: #444c5e; flex-shrink:0; }
+.cmd-history-row .chc { color: #a8b2c0; }
+
+/* ── CUE + GO/STOP — горизонтальный блок ── */
+.cue-go-strip {
+  display: flex; gap: 0; flex-shrink: 0;
+  background: var(--bg2); border-bottom: 1px solid var(--border);
+}
+.cue-boxes {
+  flex: 1; display: flex; flex-direction: column; gap: 0; padding: 6px 10px;
+}
+.cue-box {
+  background: var(--bg3); border-radius: 7px; padding: 5px 9px;
+  border: 1px solid var(--border);
+}
+.cue-box + .cue-box { margin-top: 5px; }
+.cue-box.active-box  { border-color: var(--green); }
+.cue-box.pending-box { border-color: var(--accent); }
+.cue-box-label { font-size: 9px; color: var(--dim); text-transform: uppercase; letter-spacing: .06em; }
+.cue-box-val   { font-size: 14px; font-weight: 600; margin-top: 1px; min-height: 18px; }
+.cue-box.active-box  .cue-box-val { color: var(--green); }
+.cue-box.pending-box .cue-box-val { color: var(--accent); }
+
+.go-stop {
+  display: flex; flex-direction: column; gap: 5px;
+  padding: 6px 10px; flex-shrink: 0; min-width: 90px;
+  border-left: 1px solid var(--border);
+}
+.btn-go   { flex:1; border-radius:9px; border:none; background:var(--green); color:#fff; font-size:18px; font-weight:700; cursor:pointer; }
+.btn-stop { flex:1; border-radius:9px; border:none; background:var(--red);   color:#fff; font-size:18px; font-weight:700; cursor:pointer; }
+.btn-go:active   { filter: brightness(1.2); }
+.btn-stop:active { filter: brightness(1.2); }
+
+.chat-area {
+  flex: 1; overflow-y: auto; padding: 10px 14px;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.msg-wrap { display:flex; flex-direction:column; max-width:82%; }
+.msg-wrap.user { align-self:flex-end; align-items:flex-end; }
+.msg-wrap.bot  { align-self:flex-start; align-items:flex-start; }
+.msg { padding: 8px 12px; border-radius: 12px; line-height: 1.45; font-size: 14px; }
+.msg-wrap.user .msg { background: var(--accent); color: #fff; border-bottom-right-radius: 4px; }
+.msg-wrap.bot  .msg { background: var(--bg3); color: var(--text); border-bottom-left-radius: 4px; }
+.msg-time { font-size: 10px; color: var(--dim); margin-top: 2px; padding: 0 4px; }
+
+/* Закреплённое сообщение с таймером */
+.msg-pinned {
+  border: 1px solid var(--yellow); background: #1e1a0d !important;
+  position: relative;
+}
+.msg-pinned .countdown {
+  display: inline-block; font-weight: 700; color: var(--yellow);
+  font-family: 'SF Mono', monospace; font-size: 13px;
+  margin-top: 4px;
+}
+.msg-pinned.done { border-color: var(--green); background: #0e1e12 !important; opacity:.7; }
+.msg-pin-icon { font-size: 11px; margin-right: 4px; opacity:.7; }
+
+.chat-input-row {
+  display: flex; gap: 8px; padding: 10px 14px;
+  padding-bottom: calc(10px + var(--safe-b));
+  border-top: 1px solid var(--border);
+  background: var(--bg2); flex-shrink: 0;
+}
+.chat-input-row input {
+  flex: 1; background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 22px; color: var(--text); font-size: 15px;
+  padding: 9px 16px; outline: none;
+}
+.chat-input-row input:focus { border-color: var(--accent); }
+.ibtn {
+  width: 44px; height: 44px; border-radius: 50%; border: none; cursor: pointer;
+  font-size: 18px; display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.ibtn.send  { background: var(--accent); color: #fff; }
+.ibtn.voice { background: var(--bg3); color: var(--text); border: 1px solid var(--border); }
+.ibtn.voice.rec { background: var(--red); color: #fff; border-color: var(--red); }
+
+.voice-wave { display:flex; align-items:center; gap:3px; height:36px; padding:0 6px; }
+.voice-wave span {
+  display:block; width:4px; border-radius:2px; background:var(--red);
+  animation: vwave .6s ease-in-out infinite alternate;
+}
+.voice-wave span:nth-child(1){height:8px; animation-delay:0s;}
+.voice-wave span:nth-child(2){height:18px;animation-delay:.1s;}
+.voice-wave span:nth-child(3){height:28px;animation-delay:.2s;}
+.voice-wave span:nth-child(4){height:18px;animation-delay:.3s;}
+.voice-wave span:nth-child(5){height:8px; animation-delay:.4s;}
+@keyframes vwave { to { height: 6px; opacity:.4; } }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.6} }
+
+/* ════════════════════════════════
+   TAB 2  CHANNELS  (like iRFR)
+════════════════════════════════ */
+#pg-chan { overflow: hidden; }
+
+.chan-grid-wrap { flex: 1; overflow-y: auto; padding: 8px; }
+.chan-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--cols, 6), 1fr);
+  gap: 4px;
+}
+.chan-tile {
+  aspect-ratio: 1;
+  background: var(--bg3);
+  border: 2px solid transparent;
+  border-radius: 7px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  position: relative; cursor: pointer;
+  transition: border-color .1s;
+  overflow: hidden;
+}
+.chan-tile.sel { border-color: var(--accent); }
+.chan-tile .ch-num { position: absolute; top: 3px; left: 5px; font-size: 9px; color: var(--dim); font-weight: 600; }
+.chan-tile .ch-lvl { font-size: clamp(14px, 4vw, 22px); font-weight: 700; color: var(--text); }
+.chan-tile .ch-bar { position: absolute; bottom: 0; left: 0; right: 0; height: 4px; background: var(--accent); transform-origin: left; }
+.chan-tile[data-lvl="0"]    { opacity: .45; }
+.chan-tile[data-lvl="full"] { background: #1a3a2a; border-color: var(--green); }
+
+.chan-bottom {
+  background: var(--bg2); border-top: 1px solid var(--border);
+  flex-shrink: 0; padding: 8px;
+}
+.chan-sel-info { font-size: 12px; color: var(--dim); padding: 0 2px 6px; min-height: 20px; }
+.numpad {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px;
+}
+.nk {
+  height: 42px; border-radius: 8px; border: none; cursor: pointer;
+  font-size: 16px; font-weight: 600; background: var(--bg3); color: var(--text);
+  display: flex; align-items: center; justify-content: center;
+}
+.nk:active { filter: brightness(1.3); }
+.nk.fn   { background: #222845; color: var(--accent); font-size: 13px; }
+.nk.go   { background: var(--green); color: #fff; }
+.nk.clr  { background: #2a1818; color: var(--red); }
+.nk.full { background: #1e2e1e; color: var(--green); font-size: 13px; }
+
+/* ════════════════════════════════
+   TAB 3  CUE LIST
+════════════════════════════════ */
+#pg-cues { overflow: hidden; }
+
+.cues-toolbar {
+  padding: 0 10px; background: var(--bg2); border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; flex-shrink: 0; user-select: none; height: 36px;
+}
+.cues-toolbar .ct-count { font-size:11px; color:var(--dim); margin-right:8px; flex-shrink:0; }
+
+/* Column header cells */
+.cth { display:flex; align-items:center; font-size:11px; color:var(--dim);
+  font-weight:600; letter-spacing:.04em; text-transform:uppercase;
+  padding: 0 2px; position:relative; overflow:hidden; white-space:nowrap;
+  transition: width .15s; }
+.cth.col-collapsed { width: 20px !important; min-width: 20px; padding: 0; }
+.cth.col-collapsed .cth-label { display: none; }
+.cth.col-collapsed .cth-drag  { display: none; }
+.cth-drag { position:absolute; right:0; top:0; bottom:0; width:6px;
+  cursor:col-resize; background:transparent; z-index:2; }
+.cth-drag:hover, .cth-drag.dragging { background: var(--accent); opacity:.5; }
+.cth-toggle { margin-left:3px; cursor:pointer; opacity:.5; font-size:10px; padding:0 2px; }
+.cth-toggle:hover { opacity:1; }
+
+.cue-list-scroll { flex:1; overflow-y:auto; }
+.cue-row {
+  display: flex; align-items: center; min-height: 46px;
+  border-bottom: 1px solid var(--border);
+  padding: 4px 10px; cursor: pointer;
+  transition: background .1s;
+}
+.cue-row:active { background: var(--bg3); }
+.cue-row.cue-active  { background: #0e2417; }
+.cue-row.cue-pending { background: #0e1630; }
+.cue-row .cue-num   { font-size: 17px; font-weight: 700; color: var(--text); flex-shrink:0; overflow:hidden; }
+.cue-row .cue-label { font-size: 13px; color: var(--dim); flex-shrink:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding: 0 4px; }
+.cue-row.cue-active  .cue-label { color: var(--green); }
+.cue-row.cue-pending .cue-label { color: var(--accent); }
+.cue-row .cue-notes { flex:1; font-size: 11px; color: #555e70; font-style: italic; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 0 4px; }
+.cue-go-btn {
+  width: 38px; height: 34px; border-radius: 7px; border: none;
+  background: var(--bg3); color: var(--green); font-size: 16px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.cue-go-btn:active { background: var(--green); color: #fff; }
+.cue-empty { padding: 40px; text-align: center; color: var(--dim); font-size: 14px; }
+.col-hidden { display: none !important; }
+
+/* ════════════════════════════════
+   TAB 4  FADERS
+════════════════════════════════ */
+#pg-faders { overflow-x: auto; overflow-y: hidden; }
+
+.fader-bank {
+  display: flex; gap: 6px; padding: 10px;
+  height: 100%; align-items: stretch;
+  min-width: max-content;
+}
+.fader-col {
+  width: 72px; display: flex; flex-direction: column;
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 10px; overflow: hidden;
+}
+.fader-name {
+  padding: 4px 6px; font-size: 10px; color: var(--dim);
+  background: var(--bg3); border-bottom: 1px solid var(--border);
+  text-align: center; font-weight: 600; min-height: 28px;
+  display: flex; align-items: center; justify-content: center;
+}
+.fader-track-wrap {
+  flex:1; display:flex; flex-direction:column; align-items:center;
+  padding: 8px 0; gap: 4px;
+}
+.fader-pct { font-size: 11px; color: var(--text); font-weight: 600; }
+.fader-track {
+  flex:1; width: 20px; background: var(--bg3); border-radius: 10px;
+  position: relative; cursor: pointer; touch-action: none;
+}
+.fader-thumb {
+  width: 32px; height: 18px; background: var(--text);
+  border-radius: 4px; position: absolute; left: 50%; transform: translateX(-50%);
+  bottom: 0%; cursor: grab;
+  box-shadow: 0 2px 6px rgba(0,0,0,.6);
+}
+.fader-thumb:active { background: var(--accent); cursor: grabbing; }
+.fader-fill {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  background: var(--accent); border-radius: 0 0 10px 10px;
+  opacity: .25;
+}
+
+.fader-btns {
+  display: flex; flex-direction: column; gap: 3px;
+  padding: 4px 6px; border-top: 1px solid var(--border);
+  background: var(--bg3);
+}
+.fb { height: 28px; border-radius: 6px; border: none; cursor: pointer; font-size: 11px; font-weight: 700; }
+.fb.fgo   { background: var(--green); color: #fff; }
+.fb.fstop { background: var(--red);   color: #fff; }
+.fb.bump  { background: var(--bg);    color: var(--text); border: 1px solid var(--border); }
+.fb:active { filter: brightness(1.3); }
+
+.fader-page-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 12px; background: var(--bg2); border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.fader-pg-btn {
+  background: var(--bg3); color: var(--text); border: 1px solid var(--border);
+  border-radius: 8px; padding: 6px 16px; font-size: 13px; font-weight: 600;
+  cursor: pointer;
+}
+.fader-pg-btn:active { background: var(--accent); color: #fff; }
+#fader-page-label { font-size: 13px; color: var(--dim); font-weight: 600; }
+
+/* ════════════════════════════════
+   TAB 5  ШОУ
+════════════════════════════════ */
+#pg-chat { overflow-y: auto; gap: 0; }
+.show-sections { display:flex; flex-direction:column; gap:14px; padding:14px; flex:1; }
+
+/* Карточка инфо о шоу */
+.show-card {
+  background:var(--bg2); border:1px solid var(--border); border-radius:12px;
+  overflow:hidden;
+}
+.show-card-title {
+  font-size:11px; text-transform:uppercase; letter-spacing:.07em;
+  color:var(--dim); padding:10px 14px 6px;
+}
+.show-info-grid {
+  display:grid; grid-template-columns:1fr 1fr; gap:0;
+}
+.show-info-cell {
+  padding:12px 14px; border-top:1px solid var(--border);
+}
+.show-info-cell:nth-child(odd) { border-right:1px solid var(--border); }
+.show-info-label { font-size:10px; color:var(--dim); text-transform:uppercase; letter-spacing:.05em; margin-bottom:4px; }
+.show-info-val { font-size:16px; font-weight:600; color:var(--text); }
+
+/* AI чат внутри страницы */
+.show-chat-wrap {
+  background:var(--bg2); border:1px solid var(--border); border-radius:12px;
+  overflow:hidden; display:flex; flex-direction:column; min-height:220px;
+}
+.show-chat-title {
+  font-size:11px; text-transform:uppercase; letter-spacing:.07em;
+  color:var(--dim); padding:10px 14px 6px; flex-shrink:0;
+  border-bottom:1px solid var(--border);
+}
+#chat-ai-area {
+  flex:1; overflow-y:auto; padding:10px 14px;
+  display:flex; flex-direction:column; gap:8px; min-height:120px;
+}
+.ai-input-row {
+  display: flex; gap: 8px; padding: 10px 14px;
+  border-top: 1px solid var(--border);
+  background: var(--bg2); flex-shrink: 0;
+}
+.ai-input-row input {
+  flex:1; background:var(--bg3); border:1px solid var(--border);
+  border-radius:22px; color:var(--text); font-size:15px;
+  padding:9px 16px; outline:none;
+}
+.ai-input-row input:focus { border-color:var(--accent); }
+
+/* USITT анализ */
+.usitt-card {
+  background:var(--bg2); border:1px solid var(--border); border-radius:12px;
+  overflow:hidden;
+}
+.usitt-drop {
+  margin:14px; border:2px dashed var(--border); border-radius:10px;
+  padding:28px 16px; text-align:center; cursor:pointer;
+  color:var(--dim); font-size:13px; transition:border-color .2s, color .2s;
+  position:relative;
+}
+.usitt-drop:hover, .usitt-drop.drag { border-color:var(--accent); color:var(--accent); }
+.usitt-drop input[type=file] { position:absolute; inset:0; opacity:0; cursor:pointer; }
+.usitt-latest-btn { margin:8px 14px 0; padding:7px 14px; background:var(--accent); color:#fff; border:none; border-radius:7px; font-size:13px; cursor:pointer; width:calc(100% - 28px); }
+.usitt-latest-btn:hover { opacity:0.85; }
+.usitt-drop-icon { font-size:28px; margin-bottom:6px; }
+.usitt-drop-hint { font-size:11px; color:var(--dim); margin-top:4px; }
+.usitt-status { padding:0 14px 12px; font-size:13px; color:var(--dim); min-height:20px; }
+.usitt-results { padding:0 14px 14px; display:flex; flex-direction:column; gap:10px; }
+.analysis-section { background:var(--bg3); border-radius:10px; overflow:hidden; }
+.analysis-section-header {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:10px 12px; border-bottom:1px solid var(--border);
+  font-size:12px; font-weight:600; color:var(--text);
+}
+.analysis-badge {
+  font-size:11px; padding:2px 8px; border-radius:10px;
+  background:var(--accent); color:#000; font-weight:700;
+}
+.analysis-badge.warn { background:#e0a020; }
+.analysis-badge.ok { background:#3dba6e; }
+.analysis-list {
+  max-height:220px; overflow-y:auto;
+}
+.analysis-row {
+  display:flex; align-items:center; padding:8px 12px;
+  border-bottom:1px solid var(--border); font-size:13px; gap:10px;
+}
+.analysis-row:last-child { border-bottom:none; }
+.analysis-row-label { flex:1; color:var(--text); }
+.analysis-row-detail { color:var(--dim); font-size:11px; }
+.analysis-row-action {
+  font-size:11px; padding:3px 10px; border-radius:8px;
+  background:var(--bg2); color:var(--accent); border:1px solid var(--accent);
+  cursor:pointer; flex-shrink:0;
+}
+.analysis-row-action:hover { background:var(--accent); color:#000; }
+
+/* ════════════════════════════════
+   TAB 6  SETTINGS
+════════════════════════════════ */
+#pg-settings { overflow-y: auto; padding: 16px 14px; gap: 16px; }
+.sgroup { background:var(--bg2); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
+.sgroup-title { font-size:11px; text-transform:uppercase; letter-spacing:.07em; color:var(--dim); padding:10px 14px 6px; }
+.srow { display:flex; align-items:center; padding:12px 14px; border-top:1px solid var(--border); gap:12px; }
+.srow:first-child { border-top:none; }
+.srow label { flex:1; font-size:15px; }
+.srow input  { flex:1; background:var(--bg3); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:15px; padding:6px 10px; outline:none; max-width:160px; }
+.srow input:focus { border-color:var(--accent); }
+.save-btn { padding:6px 18px; background:var(--accent); color:#fff; border:none; border-radius:8px; font-size:14px; cursor:pointer; }
+
+/* ── misc ── */
+.spinner { display:inline-block; width:14px; height:14px; border:2px solid var(--dim); border-top-color:var(--accent); border-radius:50%; animation:spin .6s linear infinite; }
+@keyframes spin { to{transform:rotate(360deg)} }
+</style>
+</head>
+<body>
+
+<!-- TABS -->
+<div id="tabs">
+  <div class="tab active" onclick="showPage('live',this)">
+    <span class="ti">🎬</span><span>Live</span>
+  </div>
+  <div class="tab" onclick="showPage('chan',this)">
+    <span class="ti">💡</span><span>Каналы</span>
+  </div>
+  <div class="tab" onclick="showPage('cues',this)">
+    <span class="ti">📋</span><span>CUE List</span>
+  </div>
+  <div class="tab" onclick="showPage('faders',this)">
+    <span class="ti">🎚</span><span>Фейдеры</span>
+  </div>
+  <div class="tab" onclick="showPage('chat',this)">
+    <span class="ti">🎭</span><span>Шоу</span>
+  </div>
+  <div class="tab" onclick="showPage('settings',this)">
+    <span class="ti">⚙️</span><span>Настройки</span>
+  </div>
+</div>
+
+<div id="content">
+
+<!-- ═══ LIVE ═══ -->
+<div id="pg-live" class="page active">
+  <div class="live-header">
+    <div class="show-name" id="show-name">—</div>
+    <div class="conn-stack">
+      <div class="conn-ip-port"><span id="conn-ip">—</span> : <span id="conn-port">—</span></div>
+      <div class="conn-status-row">
+        <div class="dot" id="dot"></div>
+        <span class="conn-status-text" id="conn-status">нет соединения</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="cmd-bar">
+    <div class="cmd-bar-header">
+      <div class="cmd-label">EOS CLI</div>
+      <button class="cmd-undo-btn" onclick="sendUndo()">↩ UNDO</button>
+    </div>
+    <div class="cmd-line" id="cmd-line">&nbsp;</div>
+    <div class="cmd-history-wrap">
+      <div class="cmd-history" id="cmd-history"></div>
+      <div class="cmd-history-resize" id="cmd-history-resize"></div>
+    </div>
+  </div>
+
+  <div class="cue-go-strip">
+    <div class="cue-boxes">
+      <div class="cue-box active-box">
+        <div class="cue-box-label">Активное CUE</div>
+        <div class="cue-box-val" id="active-cue">—</div>
+      </div>
+      <div class="cue-box pending-box">
+        <div class="cue-box-label">Следующее</div>
+        <div class="cue-box-val" id="pending-cue">—</div>
+      </div>
+    </div>
+    <div class="go-stop">
+      <button class="btn-go"   onclick="cmd('GO')">GO</button>
+      <button class="btn-stop" onclick="cmd('STOP')">STOP</button>
+    </div>
+  </div>
+
+  <div class="chat-area" id="live-chat"></div>
+
+  <div class="chat-input-row">
+    <button class="ibtn voice" id="voice-btn">🎙</button>
+    <div class="voice-wave" id="voice-wave-1" style="display:none">
+      <span></span><span></span><span></span><span></span><span></span>
+    </div>
+    <input id="live-input" type="text" placeholder="Команда или вопрос…"
+           onkeydown="if(event.key==='Enter')sendLive()">
+    <button class="ibtn send" onclick="sendLive()">↑</button>
+  </div>
+</div>
+
+<!-- ═══ CHANNELS ═══ -->
+<div id="pg-chan" class="page">
+  <div class="chan-grid-wrap" id="chan-grid-wrap">
+    <div class="chan-grid" id="chan-grid"></div>
+  </div>
+  <div class="chan-bottom">
+    <div class="chan-sel-info" id="chan-sel-info">Выберите канал</div>
+    <div class="numpad">
+      <button class="nk clr" onclick="chanClear()">CLR</button>
+      <button class="nk" onclick="chanDigit('7')">7</button>
+      <button class="nk" onclick="chanDigit('8')">8</button>
+      <button class="nk" onclick="chanDigit('9')">9</button>
+      <button class="nk full" onclick="chanFull()">FULL</button>
+      <button class="nk" onclick="chanDigit('4')">4</button>
+      <button class="nk" onclick="chanDigit('5')">5</button>
+      <button class="nk" onclick="chanDigit('6')">6</button>
+      <button class="nk fn" onclick="chanAt()">@ AT</button>
+      <button class="nk" onclick="chanDigit('1')">1</button>
+      <button class="nk" onclick="chanDigit('2')">2</button>
+      <button class="nk" onclick="chanDigit('3')">3</button>
+      <button class="nk clr" onclick="chanOut()">OUT</button>
+      <button class="nk" onclick="chanDigit('0')">0</button>
+      <button class="nk" onclick="chanDigit('.')">.</button>
+      <button class="nk go" onclick="chanEnter()">ENTER</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ CUE LIST ═══ -->
+<div id="pg-cues" class="page">
+  <div style="display:flex;gap:8px;padding:8px 12px;border-bottom:1px solid var(--border);flex-shrink:0;align-items:center">
+    <button class="cue-go-btn" style="flex:1;padding:7px 0;font-size:13px" onclick="cmd('GO TO CUE OUT')">⬛ OUT</button>
+    <button class="cue-go-btn" style="flex:1;padding:7px 0;font-size:13px" onclick="cmd('GO TO CUE 0')">⏮ CUE 0</button>
+    <div style="width:1px;background:var(--border);height:28px;margin:0 2px"></div>
+    <span style="font-size:11px;color:var(--dim);white-space:nowrap">Лист:</span>
+    <input id="cue-list-input" type="number" min="1" max="99" value="1"
+      style="width:44px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:4px 6px;font-size:13px;text-align:center"
+      onchange="setCueList(this.value)">
+  </div>
+  <div class="cues-toolbar" id="cues-toolbar">
+    <span class="ct-count" id="cue-count">–</span>
+    <div class="cth" id="cth-num" data-col="num">
+      <span class="cth-label">#</span><span class="cth-toggle">◀</span>
+      <div class="cth-drag" data-col="num"></div>
+    </div>
+    <div class="cth" id="cth-label" data-col="label">
+      <span class="cth-label">Label</span><span class="cth-toggle">◀</span>
+      <div class="cth-drag" data-col="label"></div>
+    </div>
+    <div class="cth" id="cth-notes" style="flex:1" data-col="notes">
+      <span class="cth-label">Notes</span><span class="cth-toggle">◀</span>
+    </div>
+    <div style="width:46px;flex-shrink:0"></div>
+  </div>
+  <div class="cue-list-scroll" id="cue-list-scroll"></div>
+</div>
+
+<!-- ═══ FADERS ═══ -->
+<div id="pg-faders" class="page">
+  <div class="fader-page-bar">
+    <button class="fader-pg-btn" onclick="subPage(-1)">◀ Назад</button>
+    <span id="fader-page-label">Страница 1</span>
+    <button class="fader-pg-btn" onclick="subPage(1)">Вперёд ▶</button>
+  </div>
+  <div class="fader-bank" id="fader-bank"></div>
+</div>
+
+<!-- ═══ CHAT AI ═══ -->
+<div id="pg-chat" class="page">
+  <div class="show-sections">
+
+    <!-- Инфо о шоу -->
+    <div class="show-card">
+      <div class="show-card-title">🎭 О шоу</div>
+      <div class="show-info-grid">
+        <div class="show-info-cell">
+          <div class="show-info-label">Название</div>
+          <div class="show-info-val" id="si-name">—</div>
+        </div>
+        <div class="show-info-cell">
+          <div class="show-info-label">Кью в листе</div>
+          <div class="show-info-val" id="si-cues">—</div>
+        </div>
+        <div class="show-info-cell">
+          <div class="show-info-label">Активное кью</div>
+          <div class="show-info-val" id="si-active">—</div>
+        </div>
+        <div class="show-info-cell">
+          <div class="show-info-label">Следующее</div>
+          <div class="show-info-val" id="si-pending">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- USITT анализ -->
+    <div class="usitt-card">
+      <div class="show-card-title">🔬 Анализ шоу-файла</div>
+      <div class="usitt-drop" id="usitt-drop"
+           ondragover="event.preventDefault();this.classList.add('drag')"
+           ondragleave="this.classList.remove('drag')"
+           ondrop="onUsittDrop(event)">
+        <input type="file" accept=".txt,.asc,.usitt" onchange="onUsittFile(this.files[0])">
+        <div class="usitt-drop-icon">📄</div>
+        <div>Загрузить USITT ASCII экспорт</div>
+        <div class="usitt-drop-hint">File → Export → USITT ASCII в EOS</div>
+      </div>
+      <button class="usitt-latest-btn" onclick="loadUsittLatest()" title="Загрузить последний файл из /exports/">⚡ Загрузить последний из exports/</button>
+      <div class="usitt-status" id="usitt-status"></div>
+      <div class="usitt-results" id="usitt-results"></div>
+    </div>
+
+    <!-- AI ассистент -->
+    <div class="show-chat-wrap">
+      <div class="show-chat-title">💬 Ассистент</div>
+      <div id="chat-ai-area"></div>
+      <div class="ai-input-row">
+        <button class="ibtn voice" id="voice-btn2">🎙</button>
+        <div class="voice-wave" id="voice-wave-2" style="display:none">
+          <span></span><span></span><span></span><span></span><span></span>
+        </div>
+        <input id="ai-input" type="text" placeholder="Спросить ассистента…"
+               onkeydown="if(event.key==='Enter')sendAI()">
+        <button class="ibtn send" onclick="sendAI()">↑</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══ SETTINGS ═══ -->
+<div id="pg-settings" class="page">
+  <div class="sgroup">
+    <div class="sgroup-title">Подключение EOS</div>
+    <div class="srow">
+      <label>IP адрес</label>
+      <input id="cfg-ip" type="text" inputmode="decimal">
+      <button class="save-btn" onclick="saveIp()">Сохр.</button>
+    </div>
+    <div class="srow">
+      <label>Порт TX (EOS слушает)</label>
+      <input id="cfg-port" type="text" inputmode="numeric">
+      <button class="save-btn" onclick="savePort()">Сохр.</button>
+    </div>
+    <div class="srow">
+      <label>Порт RX (мы слушаем)</label>
+      <input id="cfg-rx-port" type="text" inputmode="numeric">
+      <button class="save-btn" onclick="saveRxPort()">Сохр.</button>
+    </div>
+  </div>
+  <div class="sgroup" style="margin-top:16px">
+    <div class="srow">
+      <label>Статус</label>
+      <span id="cfg-status" style="color:var(--dim);font-size:14px">—</span>
+    </div>
+  </div>
+</div>
+
+</div><!-- #content -->
+
+<script>
+/* ══════════ STATE ══════════ */
+let state = { active_cue:'', pending_cue:'', show_name:'', cmd_line:'', eos_ok:false };
+let eosIp = '—', eosPort = '—';
+let cueList = [];
+let activeCueNum = '', pendingCueNum = '';
+
+/* ══════════ TABS ══════════ */
+function showPage(id, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('pg-' + id).classList.add('active');
+  el.classList.add('active');
+  if (id === 'cues') renderCues();
+  if (id === 'chan') renderChanGrid();
+}
+
+/* ══════════ SSE ══════════ */
+const es = new EventSource('/api/events');
+es.onmessage = e => {
+  const d = JSON.parse(e.data);
+  if (d.type === 'cues') {
+    cueList = d.cues;
+    document.getElementById('si-cues').textContent = cueList.length || '—';
+    if (document.getElementById('pg-cues').classList.contains('active')) renderCues();
+  } else if (d.type === 'faders') {
+    applyFaderState(d.faders);
+    if (d.page) {
+      faderPageNum = d.page;
+      document.getElementById('fader-page-label').textContent = 'Страница ' + faderPageNum;
+    }
+  } else if (d.type === 'cmd_history') {
+    appendCmdHistory(d.entry);
+  } else if (d.type === 'cmd_history_init') {
+    const h = document.getElementById('cmd-history');
+    if (h) { h.innerHTML = ''; d.entries.forEach(appendCmdHistory); }
+  } else {
+    state = d;
+    updateLive();
+  }
+};
+
+function appendCmdHistory(entry) {
+  const h = document.getElementById('cmd-history');
+  if (!h) return;
+  const row = document.createElement('div');
+  row.className = 'cmd-history-row';
+  row.innerHTML = '<span class="cht">' + entry.ts + '</span><span class="chc">' + entry.cmd + '</span>';
+  h.prepend(row);
+  // keep max 20 rows
+  while (h.children.length > 20) h.removeChild(h.lastChild);
+}
+es.onerror   = () => { state.eos_ok = false; updateLive(); };
+
+function updateLive() {
+  const ok = state.eos_ok;
+  document.getElementById('dot').className = 'dot' + (ok ? ' ok' : '');
+  const statusEl = document.getElementById('conn-status');
+  statusEl.textContent = ok ? 'подключено' : 'нет соединения';
+  statusEl.style.color = ok ? 'var(--green)' : 'var(--red)';
+
+  document.getElementById('show-name').textContent = state.show_name || '—';
+  document.getElementById('cmd-line').textContent  = state.cmd_line  || ' ';
+  document.getElementById('active-cue').textContent  = state.active_cue  || '—';
+  document.getElementById('pending-cue').textContent = state.pending_cue || '—';
+
+  // Шоу-вкладка
+  document.getElementById('si-name').textContent    = state.show_name || '—';
+  document.getElementById('si-active').textContent  = state.active_cue  || '—';
+  document.getElementById('si-pending').textContent = state.pending_cue || '—';
+
+  const cfgSt = document.getElementById('cfg-status');
+  cfgSt.textContent = ok ? '✓ EOS отвечает' : '✗ нет ответа от EOS';
+  cfgSt.style.color = ok ? 'var(--green)' : 'var(--red)';
+
+  activeCueNum  = parseCueNum(state.active_cue);
+  pendingCueNum = parseCueNum(state.pending_cue);
+
+  if (document.getElementById('pg-cues').classList.contains('active')) renderCues();
+}
+
+function parseCueNum(text) {
+  if (!text) return '';
+  const m = text.match(/(?:\d+\/)?([\d.]+)/);
+  return m ? m[1] : '';
+}
+
+/* ══════════ GET IP/PORT ══════════ */
+fetch('/api/get_ip').then(r => r.json()).then(d => {
+  eosIp = d.ip; eosPort = d.port;
+  document.getElementById('conn-ip').textContent   = eosIp;
+  document.getElementById('conn-port').textContent = eosPort;
+  document.getElementById('cfg-ip').value    = eosIp;
+  document.getElementById('cfg-port').value  = eosPort;
+  document.getElementById('cfg-rx-port').value = d.rx_port || '';
+});
+
+/* ══════════ COMMANDS ══════════ */
+async function cmd(c) {
+  return fetch('/api/cmd', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({cmd: c})
+  }).then(r => r.json());
+}
+
+function sendUndo() {
+  cmd('UNDO');
+  const area = document.getElementById('live-chat');
+  appendMsg(area, 'UNDO', 'user');
+  appendMsg(area, '↩ Отменено', 'bot');
+}
+
+/* ══════════ ВРЕМЯ ══════════ */
+function _nowTime() {
+  return new Date().toLocaleTimeString('ru', {hour:'2-digit', minute:'2-digit'});
+}
+
+/* ══════════ SCHEDULED COMMANDS ══════════ */
+// Парсит "в 21:00", "через 5 минут", "через 30 секунд", "через 1 час"
+// Возвращает {ms, label, at, stripped} где stripped = текст без фразы времени
+function _parseSchedule(text) {
+  const t = text.toLowerCase();
+  // "через N минут/секунд/часов"
+  let m = t.match(/через\s+(\d+)\s*(минут|мин|секунд|сек|час[а-я]*)/);
+  if (m) {
+    const n = parseInt(m[1]);
+    const unit = m[2];
+    let ms = 0;
+    if (unit.startsWith('сек')) ms = n * 1000;
+    else if (unit.startsWith('час')) ms = n * 3600000;
+    else ms = n * 60000;
+    const at = new Date(Date.now() + ms);
+    const stripped = text.replace(new RegExp('через\\s+' + m[1] + '\\s+' + m[2], 'i'), '').trim();
+    return { ms, label: 'через ' + m[1] + ' ' + m[2], at, stripped };
+  }
+  // "в 21:00" или "в 21:00:00"
+  m = t.match(/\bв\s+(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+  if (m) {
+    const now = new Date();
+    const at = new Date(now);
+    at.setHours(parseInt(m[1]), parseInt(m[2]), m[3] ? parseInt(m[3]) : 0, 0);
+    if (at <= now) at.setDate(at.getDate() + 1);
+    const ms = at - now;
+    const hh = String(at.getHours()).padStart(2,'0');
+    const mm = String(at.getMinutes()).padStart(2,'0');
+    const stripped = text.replace(new RegExp('в\\s+' + m[1] + ':' + m[2] + (m[3] ? ':' + m[3] : ''), 'i'), '').trim();
+    return { ms, label: 'в ' + hh + ':' + mm, at, stripped };
+  }
+  return null;
+}
+
+function _fmtCountdown(ms) {
+  if (ms <= 0) return '00:00';
+  const s = Math.ceil(ms / 1000);
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  if (h > 0) return h + ':' + String(m).padStart(2,'0') + ':' + String(sec).padStart(2,'0');
+  return String(m).padStart(2,'0') + ':' + String(sec).padStart(2,'0');
+}
+
+// Создаёт закреплённое сообщение с таймером обратного отсчёта
+function _pinScheduled(area, text, schedule, cmdsToRun) {
+  const wrap = document.createElement('div');
+  wrap.className = 'msg-wrap bot';
+  const msgEl = document.createElement('div');
+  msgEl.className = 'msg msg-pinned';
+  const cdEl = document.createElement('div');
+  cdEl.className = 'countdown';
+  msgEl.innerHTML = '<span class="msg-pin-icon">📌</span>' + text;
+  msgEl.appendChild(cdEl);
+  const timeEl = document.createElement('div');
+  timeEl.className = 'msg-time';
+  timeEl.textContent = _nowTime();
+  wrap.appendChild(msgEl);
+  wrap.appendChild(timeEl);
+  // Вставить в начало (закреплённые сверху) — или можно просто append
+  area.insertBefore(wrap, area.firstChild);
+
+  let remaining = schedule.ms;
+  const tick = setInterval(() => {
+    remaining = schedule.at - Date.now();
+    if (remaining <= 0) {
+      clearInterval(tick);
+      cdEl.textContent = '✅ выполнено';
+      msgEl.classList.add('done');
+      cmdsToRun.forEach(c => cmd(c));
+      appendMsg(area, '⚡ Выполнено: ' + cmdsToRun.join(', '), 'bot');
+    } else {
+      cdEl.textContent = '⏱ ' + _fmtCountdown(remaining);
+    }
+  }, 500);
+  cdEl.textContent = '⏱ ' + _fmtCountdown(remaining);
+}
+
+/* ══════════ LIVE CHAT ══════════ */
+function appendMsg(container, text, who) {
+  const wrap = document.createElement('div');
+  wrap.className = 'msg-wrap ' + who;
+  const el = document.createElement('div');
+  el.className = 'msg';
+  el.textContent = text;
+  const timeEl = document.createElement('div');
+  timeEl.className = 'msg-time';
+  timeEl.textContent = _nowTime();
+  wrap.appendChild(el);
+  wrap.appendChild(timeEl);
+  container.appendChild(wrap);
+  container.scrollTop = 99999;
+  // remove() на el удаляет весь wrap (для совместимости с голосовым заполнителем)
+  el.remove = () => wrap.remove();
+  return el;
+}
+
+async function sendLive() {
+  const inp = document.getElementById('live-input');
+  const text = inp.value.trim();
+  if (!text) return;
+  inp.value = '';
+  const area = document.getElementById('live-chat');
+  appendMsg(area, text, 'user');
+
+  // Проверяем отложенные команды
+  const schedule = _parseSchedule(text);
+  if (schedule) {
+    const cleanText = schedule.stripped || text;
+    const r = await fetch('/api/chat', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({text: cleanText, dry_run: true})});
+    const d = await r.json();
+    const cmds = d.cmds || [];
+    appendMsg(area, d.reply || ('Запланировано ' + schedule.label + (cmds.length ? ': ' + cmds.join(', ') : '')), 'bot');
+    if (cmds.length) _pinScheduled(area, schedule.label + ': ' + cmds.join(', '), schedule, cmds);
+    return;
+  }
+
+  const r = await fetch('/api/chat', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({text})});
+  const d = await r.json();
+  appendMsg(area, d.reply || d.error || '?', 'bot');
+}
+
+/* ══════════ AI CHAT ══════════ */
+async function sendAI() {
+  const inp = document.getElementById('ai-input');
+  const text = inp.value.trim();
+  if (!text) return;
+  inp.value = '';
+  const area = document.getElementById('chat-ai-area');
+  appendMsg(area, text, 'user');
+
+  // Спиннер
+  const wrap = document.createElement('div');
+  wrap.className = 'msg-wrap bot';
+  const sp = document.createElement('div');
+  sp.className = 'msg';
+  sp.innerHTML = '<span class="spinner"></span>';
+  wrap.appendChild(sp);
+  area.appendChild(wrap);
+  area.scrollTop = 99999;
+
+  const schedule = _parseSchedule(text);
+  const cleanText = schedule ? (schedule.stripped || text) : text;
+  const r = await fetch('/api/chat', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({text: cleanText, dry_run: !!schedule})});
+  const d = await r.json();
+  wrap.remove();
+
+  appendMsg(area, d.reply || d.error || '?', 'bot');
+  if (schedule && d.cmds && d.cmds.length) {
+    _pinScheduled(area, schedule.label + ': ' + d.cmds.join(', '), schedule, d.cmds);
+  }
+}
+
+/* ══════════ VOICE ══════════ */
+/* ══════════ PUSH-TO-TALK ══════════ */
+let _mediaRec = null, _recChunks = [], _recStream = null;
+
+function _voiceBtns() { return document.querySelectorAll('.ibtn.voice'); }
+function _voiceWaves(btn) {
+  // найти .voice-wave рядом с кнопкой (следующий sibling)
+  const waves = [];
+  document.querySelectorAll('.voice-wave').forEach(w => {
+    if (w.previousElementSibling === btn || w.id === 'voice-wave-' + btn.id.replace('voice-btn',''))
+      waves.push(w);
+  });
+  return waves;
+}
+
+async function _startVoice(btn) {
+  if (_mediaRec) return;
+  try {
+    _recStream = await navigator.mediaDevices.getUserMedia({audio:true});
+    _recChunks = [];
+    _mediaRec = new MediaRecorder(_recStream);
+    _mediaRec.ondataavailable = e => { if (e.data.size > 0) _recChunks.push(e.data); };
+    _mediaRec.start();
+    btn.classList.add('rec');
+    const waveId = 'voice-wave-' + btn.id.replace('voice-btn','').replace('-','') ;
+    const wave = document.getElementById(waveId) || btn.nextElementSibling;
+    if (wave && wave.classList.contains('voice-wave')) wave.style.display = 'flex';
+  } catch(e) {
+    alert('Нет доступа к микрофону: ' + e.message);
+  }
+}
+
+async function _stopVoice(btn) {
+  if (!_mediaRec) return;
+  const area = btn.closest('.page') ? btn.closest('.page').querySelector('.chat-area, #chat-ai-area') : null;
+  const chatArea = area || document.getElementById('live-chat');
+
+  await new Promise(res => { _mediaRec.onstop = res; _mediaRec.stop(); });
+  _recStream.getTracks().forEach(t => t.stop());
+
+  btn.classList.remove('rec');
+  const waveId = 'voice-wave-' + btn.id.replace('voice-btn','').replace('-','');
+  const wave = document.getElementById(waveId) || btn.nextElementSibling;
+  if (wave && wave.classList.contains('voice-wave')) wave.style.display = 'none';
+
+  _mediaRec = null;
+  _recStream = null;
+
+  if (_recChunks.length === 0) return;
+  const blob = new Blob(_recChunks, {type: 'audio/webm'});
+  _recChunks = [];
+
+  // Показать плейсхолдер пока идёт распознавание
+  const placeholder = appendMsg(chatArea, '…распознаю…', 'user');
+
+  try {
+    const r = await fetch('/api/transcribe', {method:'POST', body: blob, headers:{'Content-Type':'audio/webm'}});
+    const d = await r.json();
+    if (d.transcribed) placeholder.textContent = d.transcribed;
+    else placeholder.remove();
+    if (d.error && !d.transcribed) appendMsg(chatArea, 'Ошибка: ' + d.error, 'bot');
+    if (d.reply) appendMsg(chatArea, d.reply, 'bot');
+  } catch(e) {
+    placeholder.remove();
+    appendMsg(chatArea, 'Ошибка соединения', 'bot');
+  }
+}
+
+// Привязка push-to-talk к кнопкам (pointerdown/pointerup + touch)
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.ibtn.voice').forEach(btn => {
+    btn.addEventListener('pointerdown', e => { e.preventDefault(); _startVoice(btn); });
+    btn.addEventListener('pointerup',   e => { e.preventDefault(); _stopVoice(btn); });
+    btn.addEventListener('pointerleave',e => { if (_mediaRec) _stopVoice(btn); });
+  });
+});
+
+/* ══════════ CUE LIST ══════════ */
+async function fetchCues() {
+  const r = await fetch('/api/cues');
+  cueList = await r.json();
+}
+
+function renderCues() {
+  const el = document.getElementById('cue-list-scroll');
+  const cnt = document.getElementById('cue-count');
+
+  if (!cueList.length) {
+    cnt.textContent = 'Ожидание CUE от EOS…';
+    el.innerHTML = '<div class="cue-empty">CUE загружаются автоматически при подключении к EOS</div>';
+    return;
+  }
+
+  cnt.textContent = cueList.length + ' CUE';
+  el.innerHTML = '';
+
+  cueList.forEach(c => {
+    const row = document.createElement('div');
+    row.className = 'cue-row';
+    if (c.num === activeCueNum)  row.classList.add('cue-active');
+    if (c.num === pendingCueNum) row.classList.add('cue-pending');
+    row.innerHTML =
+      '<span class="cue-num">' + c.num + '</span>' +
+      '<span class="cue-label">' + (c.label || '') + '</span>' +
+      '<span class="cue-notes">' + (c.notes || '') + '</span>' +
+      '<button class="cue-go-btn" onclick="event.stopPropagation();cmd(\'GO TO CUE ' + c.num + '\')">▶</button>';
+    row.addEventListener('click', () => cmd('GO TO CUE ' + c.num));
+    el.appendChild(row);
+  });
+
+  const active = el.querySelector('.cue-active');
+  if (active) active.scrollIntoView({block: 'center'});
+  applyCueCols();
+}
+
+fetchCues().then(() => {
+  if (document.getElementById('pg-cues').classList.contains('active')) renderCues();
+});
+
+/* ══════════ CUE COLUMN RESIZE / HIDE ══════════ */
+const CUE_COLS = {
+  num:   { w: 52,  hidden: false },
+  label: { w: 130, hidden: false },
+  notes: { hidden: false }   // flex:1, нет фиксированной ширины
+};
+
+function applyCueCols() {
+  ['num','label'].forEach(col => {
+    const cfg = CUE_COLS[col];
+    const th = document.getElementById('cth-' + col);
+    if (th) {
+      th.classList.toggle('col-collapsed', cfg.hidden);
+      if (!cfg.hidden) th.style.width = cfg.w + 'px';
+      th.style.flexShrink = '0';
+      const tog = th.querySelector('.cth-toggle');
+      if (tog) tog.textContent = cfg.hidden ? '▶' : '◀';
+    }
+    document.querySelectorAll('.cue-row .cue-' + col).forEach(el => {
+      el.style.width = cfg.hidden ? '0' : cfg.w + 'px';
+      el.style.padding = cfg.hidden ? '0' : '';
+      el.classList.toggle('col-hidden', cfg.hidden);
+    });
+  });
+  // notes col
+  const nCfg = CUE_COLS.notes;
+  const nth = document.getElementById('cth-notes');
+  if (nth) {
+    nth.classList.toggle('col-collapsed', nCfg.hidden);
+    if (!nCfg.hidden) nth.style.flex = '1';
+    else nth.style.flex = '0';
+    const tog = nth.querySelector('.cth-toggle');
+    if (tog) tog.textContent = nCfg.hidden ? '▶' : '◀';
+  }
+  document.querySelectorAll('.cue-row .cue-notes').forEach(el => {
+    el.style.padding = nCfg.hidden ? '0' : '';
+    el.classList.toggle('col-hidden', nCfg.hidden);
+  });
+}
+
+// Toggle column visibility on header click
+document.getElementById('cues-toolbar').addEventListener('click', e => {
+  const tog = e.target.closest('.cth-toggle');
+  if (!tog) return;
+  const th = tog.closest('.cth');
+  if (!th) return;
+  const col = th.dataset.col;
+  if (!col || !CUE_COLS[col]) return;
+  CUE_COLS[col].hidden = !CUE_COLS[col].hidden;
+  applyCueCols();
+});
+
+// Drag resize for num and label columns
+(function() {
+  let dragging = null, startX = 0, startW = 0;
+  document.querySelectorAll('.cth-drag').forEach(handle => {
+    handle.addEventListener('pointerdown', e => {
+      const col = handle.dataset.col;
+      if (!col || CUE_COLS[col].hidden) return;
+      dragging = col;
+      startX = e.clientX;
+      startW = CUE_COLS[col].w;
+      handle.classList.add('dragging');
+      e.preventDefault();
+    });
+  });
+  document.addEventListener('pointermove', e => {
+    if (!dragging) return;
+    const delta = e.clientX - startX;
+    CUE_COLS[dragging].w = Math.max(30, startW + delta);
+    applyCueCols();
+  });
+  document.addEventListener('pointerup', () => {
+    if (!dragging) return;
+    document.querySelectorAll('.cth-drag').forEach(h => h.classList.remove('dragging'));
+    dragging = null;
+  });
+})();
+
+/* ══════════ CHANNELS (iRFR style) ══════════ */
+const CHAN_COUNT = 72;
+let chanLevels  = {};
+let chanSelected = new Set();
+let chanEntry = '';
+let chanMode  = 'chan';
+
+function renderChanGrid() {
+  const wrap = document.getElementById('chan-grid-wrap');
+  const cols = Math.max(5, Math.min(10, Math.floor(wrap.clientWidth / 54)));
+  const grid = document.getElementById('chan-grid');
+  grid.style.setProperty('--cols', cols);
+
+  if (grid.children.length === CHAN_COUNT) {
+    for (let i = 1; i <= CHAN_COUNT; i++) {
+      const tile = document.getElementById('ch-' + i);
+      if (!tile) continue;
+      const lvl = chanLevels[i] ?? 0;
+      tile.querySelector('.ch-lvl').textContent = lvl > 0 ? lvl + '%' : '—';
+      tile.querySelector('.ch-bar').style.width = lvl + '%';
+      tile.dataset.lvl = lvl === 0 ? '0' : lvl === 100 ? 'full' : '';
+      tile.classList.toggle('sel', chanSelected.has(i));
+    }
+    return;
+  }
+
+  grid.innerHTML = '';
+  for (let i = 1; i <= CHAN_COUNT; i++) {
+    const tile = document.createElement('div');
+    tile.className = 'chan-tile';
+    tile.id = 'ch-' + i;
+    tile.dataset.lvl = '0';
+    tile.innerHTML =
+      '<span class="ch-num">' + i + '</span>' +
+      '<span class="ch-lvl">—</span>' +
+      '<div class="ch-bar" style="width:0%"></div>';
+    tile.addEventListener('click', () => toggleChan(i));
+    grid.appendChild(tile);
+  }
+}
+
+function toggleChan(i) {
+  if (chanSelected.has(i)) chanSelected.delete(i);
+  else chanSelected.add(i);
+  updateChanInfo();
+  renderChanGrid();
+}
+
+function updateChanInfo() {
+  const sel = [...chanSelected].sort((a, b) => a - b);
+  document.getElementById('chan-sel-info').textContent =
+    sel.length ? 'Каналы: ' + sel.join(', ') + (chanEntry ? '  →  ' + chanEntry : '') : 'Выберите канал';
+}
+
+function chanDigit(d) { chanEntry += d; updateChanInfo(); }
+
+function chanClear() {
+  chanEntry = ''; chanMode = 'chan'; chanSelected.clear();
+  updateChanInfo(); renderChanGrid();
+}
+
+function chanAt() {
+  if (!chanSelected.size) return;
+  chanMode = 'at'; chanEntry = ''; updateChanInfo();
+}
+
+function chanFull() {
+  if (!chanSelected.size) return;
+  chanSelected.forEach(c => { cmd('CHAN ' + c + ' @ FULL'); chanLevels[c] = 100; });
+  renderChanGrid();
+}
+
+function chanOut() {
+  if (!chanSelected.size) return;
+  chanSelected.forEach(c => { cmd('CHAN ' + c + ' @ 0'); chanLevels[c] = 0; });
+  renderChanGrid();
+}
+
+function chanEnter() {
+  if (!chanSelected.size && chanMode === 'chan' && chanEntry) {
+    chanSelected.add(parseInt(chanEntry));
+    chanEntry = ''; updateChanInfo(); renderChanGrid(); return;
+  }
+  if (chanMode === 'at' && chanEntry) {
+    const lvl = parseInt(chanEntry);
+    chanSelected.forEach(c => { cmd('CHAN ' + c + ' @ ' + lvl); chanLevels[c] = Math.min(100, Math.max(0, lvl)); });
+  }
+  chanEntry = ''; chanMode = 'chan';
+  updateChanInfo(); renderChanGrid();
+}
+
+renderChanGrid();
+window.addEventListener('resize', () => {
+  if (document.getElementById('pg-chan').classList.contains('active')) renderChanGrid();
+});
+
+/* ══════════ FADERS ══════════ */
+const FADER_COUNT = 10;
+// faderData[n] = {name, level} где n = 1..10 (как в EOS)
+let faderData = {};
+for (let i = 1; i <= FADER_COUNT; i++) faderData[i] = {name: 'Sub ' + i, level: 0};
+let faderPageNum = 1;
+
+function buildFaders() {
+  const bank = document.getElementById('fader-bank');
+  bank.innerHTML = '';
+  for (let n = 1; n <= FADER_COUNT; n++) {
+    const col = document.createElement('div');
+    col.className = 'fader-col';
+    col.id = 'fcol-' + n;
+    col.innerHTML =
+      '<div class="fader-name" id="fname-' + n + '">' + (faderData[n].name || 'Sub ' + n) + '</div>' +
+      '<div class="fader-track-wrap">' +
+        '<span class="fader-pct" id="fpct-' + n + '">0%</span>' +
+        '<div class="fader-track" id="ftrack-' + n + '">' +
+          '<div class="fader-fill"  id="ffill-'  + n + '" style="height:0%"></div>' +
+          '<div class="fader-thumb" id="fthumb-' + n + '" style="bottom:0%"></div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="fader-btns">' +
+        '<button class="fb fstop" onclick="faderStop(' + n + ')">STOP</button>' +
+        '<button class="fb bump" id="fbump-' + n + '" ' +
+          'onpointerdown="faderBump(' + n + ',true)" ' +
+          'onpointerup="faderBump(' + n + ',false)" ' +
+          'onpointerleave="faderBump(' + n + ',false)">BUMP</button>' +
+      '</div>';
+    bank.appendChild(col);
+    setupFaderDrag(n);
+  }
+}
+
+function updateFaderUI(n, level01) {
+  const pct = Math.round(level01 * 100);
+  const el = {
+    pct:   document.getElementById('fpct-'   + n),
+    fill:  document.getElementById('ffill-'  + n),
+    thumb: document.getElementById('fthumb-' + n),
+  };
+  if (el.pct)   el.pct.textContent    = pct + '%';
+  if (el.fill)  el.fill.style.height  = pct + '%';
+  if (el.thumb) el.thumb.style.bottom = pct + '%';
+}
+
+function applyFaderState(faders) {
+  // faders: {1: {name, level}, ...}  level = 0.0–1.0
+  for (const [key, fd] of Object.entries(faders)) {
+    const n = parseInt(key);
+    if (n < 1 || n > FADER_COUNT) continue;
+    faderData[n] = fd;
+    const nameEl = document.getElementById('fname-' + n);
+    if (nameEl && fd.name) nameEl.textContent = fd.name;
+    updateFaderUI(n, fd.level || 0);
+  }
+}
+
+function faderStop(n) {
+  fetch('/api/fader/stop', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({n})});
+}
+
+function faderBump(n, on) {
+  const btn = document.getElementById('fbump-' + n);
+  if (btn) { btn.style.background = on ? 'var(--yellow)' : ''; btn.style.color = on ? '#000' : ''; }
+  fetch('/api/fader/bump', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({n, on})});
+}
+
+function setupFaderDrag(n) {
+  const track = document.getElementById('ftrack-' + n);
+  let drag = false;
+  function getVal(clientY) {
+    const r = track.getBoundingClientRect();
+    return Math.max(0, Math.min(1, 1 - (clientY - r.top) / r.height));
+  }
+  track.addEventListener('pointerdown', e => {
+    drag = true; track.setPointerCapture(e.pointerId);
+    const v = getVal(e.clientY);
+    updateFaderUI(n, v);
+    fetch('/api/fader/set', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({n, level: v})});
+  });
+  track.addEventListener('pointermove', e => {
+    if (!drag) return;
+    const v = getVal(e.clientY);
+    updateFaderUI(n, v);
+    fetch('/api/fader/set', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({n, level: v})});
+  });
+  track.addEventListener('pointerup', () => { drag = false; });
+}
+
+function subPage(delta) {
+  fetch('/api/fader/page', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({delta})})
+    .then(r => r.json())
+    .then(d => {
+      if (d.page) {
+        faderPageNum = d.page;
+        document.getElementById('fader-page-label').textContent = 'Страница ' + faderPageNum;
+      }
+    });
+}
+
+buildFaders();
+
+/* ══════════ RESIZE CMD HISTORY ══════════ */
+(function() {
+  const resizer = document.getElementById('cmd-history-resize');
+  const hist    = document.getElementById('cmd-history');
+  if (!resizer || !hist) return;
+  let startY = 0, startH = 0, dragging = false;
+  resizer.addEventListener('pointerdown', e => {
+    dragging = true;
+    startY = e.clientY;
+    startH = hist.offsetHeight;
+    resizer.setPointerCapture(e.pointerId);
+    e.preventDefault();
+  });
+  resizer.addEventListener('pointermove', e => {
+    if (!dragging) return;
+    const newH = Math.max(22, Math.min(300, startH + (e.clientY - startY)));
+    hist.style.height = newH + 'px';
+  });
+  resizer.addEventListener('pointerup', () => { dragging = false; });
+})();
+
+/* ══════════ SETTINGS ══════════ */
+async function saveIp() {
+  const ip = document.getElementById('cfg-ip').value.trim();
+  if (!ip) return;
+  await fetch('/api/set_ip', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ip})});
+  eosIp = ip;
+  document.getElementById('conn-ip').textContent = ip;
+}
+async function savePort() {
+  const port = document.getElementById('cfg-port').value.trim();
+  if (!port) return;
+  await fetch('/api/set_port', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({port: parseInt(port)})});
+  eosPort = port;
+  document.getElementById('conn-port').textContent = port;
+}
+async function setCueList(num) {
+  const ln = parseInt(num);
+  if (!ln || ln < 1) return;
+  document.getElementById('cue-list-input').value = ln;
+  await fetch('/api/set_cue_list', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({list_num: ln})});
+  cueList = [];
+  renderCues();
+}
+async function saveRxPort() {
+  const port = document.getElementById('cfg-rx-port').value.trim();
+  if (!port) return;
+  await fetch('/api/set_rx_port', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({port: parseInt(port)})});
+}
+
+/* ══════════ USITT АНАЛИЗ ══════════ */
+async function loadUsittLatest() {
+  const status = document.getElementById('usitt-status');
+  status.textContent = 'Загружаю из exports/…';
+  try {
+    const r = await fetch('/api/analyze/usitt_latest');
+    const d = await r.json();
+    if (d.error) { status.textContent = '⚠️ ' + d.error; return; }
+    status.textContent = '✅ ' + (d.filename || '') + ' — ' + d.cue_count + ' кью, ' + d.channel_count + ' каналов';
+    renderUsittResults(d);
+  } catch(e) { status.textContent = '❌ ' + e.message; }
+}
+
+function onUsittDrop(e) {
+  e.preventDefault();
+  document.getElementById('usitt-drop').classList.remove('drag');
+  const file = e.dataTransfer.files[0];
+  if (file) onUsittFile(file);
+}
+
+async function onUsittFile(file) {
+  if (!file) return;
+  const status = document.getElementById('usitt-status');
+  const results = document.getElementById('usitt-results');
+  status.textContent = '⏳ Загружаю ' + file.name + '…';
+  results.innerHTML = '';
+
+  const text = await file.text();
+  const fd = new FormData();
+  fd.append('file', new Blob([text], {type:'text/plain'}), file.name);
+
+  try {
+    const r = await fetch('/api/analyze/usitt', {method:'POST', body: fd});
+    const d = await r.json();
+    if (d.error) { status.textContent = '❌ ' + d.error; return; }
+    status.textContent = '✅ ' + file.name + ' — ' + (d.cue_count||0) + ' кью, ' + (d.channel_count||0) + ' каналов';
+    renderUsittResults(d);
+  } catch(e) {
+    status.textContent = '❌ Ошибка: ' + e.message;
+  }
+}
+
+function renderUsittResults(d) {
+  const wrap = document.getElementById('usitt-results');
+  wrap.innerHTML = '';
+
+  // Фантомные параметры — самое важное!
+  if (d.phantom_cues && d.phantom_cues.length) {
+    const sec = makeAnalysisSection(
+      '👻 Фантомные параметры (двигаются в темноте)',
+      d.phantom_cues.length,
+      'warn',
+      d.phantom_cues,
+      row => {
+        const blockTag = row.is_block ? ' [BLOCK]' : '';
+        const detail = `${row.phantom_count} приборов с NP в темноте${blockTag}`;
+        return {
+          label: 'CUE ' + row.num + (row.label ? ' — ' + row.label : ''),
+          detail: detail,
+          action: null
+        };
+      }
+    );
+    wrap.appendChild(sec);
+
+    // Детали: какие каналы в каком кью
+    const detSec = document.createElement('div');
+    detSec.className = 'analysis-section';
+    detSec.innerHTML = '<div class="analysis-section-header"><span>🔍 Детали фантомных параметров</span></div>';
+    const detList = document.createElement('div');
+    detList.className = 'analysis-list';
+    d.phantom_cues.forEach(cue => {
+      cue.phantom_channels.slice(0, 10).forEach(pc => {
+        const row = document.createElement('div');
+        row.className = 'analysis-row';
+        row.innerHTML = `<span class="ar-label">CUE ${cue.num} · Кан ${pc.channel}</span><span class="ar-detail">params: ${pc.param_ids.slice(0,6).join(', ')}${pc.param_ids.length > 6 ? '…' : ''}</span>`;
+        detList.appendChild(row);
+      });
+    });
+    detSec.appendChild(detList);
+    wrap.appendChild(detSec);
+  }
+
+  // Каналы на 0 в кью-листе
+  if (d.zero_channels && d.zero_channels.length) {
+    const sec = makeAnalysisSection(
+      '🔴 Каналы на 0 в кью-листе',
+      d.zero_channels.length,
+      'warn',
+      d.zero_channels,
+      row => {
+        const cues = row.cues.slice(0,5).join(', ') + (row.cues.length > 5 ? '…' : '');
+        return { label: 'Канал ' + row.channel, detail: 'в кью: ' + cues,
+                 action: 'Удалить', onclick: () => deleteZeroChannel(row.channel, row.cues) };
+      }
+    );
+    wrap.appendChild(sec);
+  }
+
+  // Пустые кью (без метки и без каналов)
+  if (d.empty_cues && d.empty_cues.length) {
+    const sec = makeAnalysisSection(
+      '⚪ Пустые кью',
+      d.empty_cues.length,
+      'warn',
+      d.empty_cues,
+      row => ({ label: 'CUE ' + row.num, detail: row.label || '(без метки)', action: null })
+    );
+    wrap.appendChild(sec);
+  }
+
+  // Статистика каналов
+  if (d.channel_stats) {
+    const sec = makeAnalysisSection(
+      '📊 Топ каналов по использованию',
+      null,
+      'ok',
+      d.channel_stats.slice(0, 20),
+      row => ({ label: 'Канал ' + row.channel, detail: row.cue_count + ' кью', action: null })
+    );
+    wrap.appendChild(sec);
+  }
+}
+
+function makeAnalysisSection(title, count, badgeType, items, rowFn) {
+  const sec = document.createElement('div');
+  sec.className = 'analysis-section';
+  const hdr = document.createElement('div');
+  hdr.className = 'analysis-section-header';
+  hdr.innerHTML = '<span>' + title + '</span>';
+  if (count !== null) {
+    const badge = document.createElement('span');
+    badge.className = 'analysis-badge ' + badgeType;
+    badge.textContent = count;
+    hdr.appendChild(badge);
+  }
+  sec.appendChild(hdr);
+  const list = document.createElement('div');
+  list.className = 'analysis-list';
+  items.forEach(item => {
+    const info = rowFn(item);
+    const row = document.createElement('div');
+    row.className = 'analysis-row';
+    row.innerHTML = '<span class="analysis-row-label">' + info.label + '</span>'
+      + '<span class="analysis-row-detail">' + (info.detail||'') + '</span>';
+    if (info.action) {
+      const btn = document.createElement('button');
+      btn.className = 'analysis-row-action';
+      btn.textContent = info.action;
+      btn.onclick = info.onclick;
+      row.appendChild(btn);
+    }
+    list.appendChild(row);
+  });
+  sec.appendChild(list);
+  return sec;
+}
+
+async function deleteZeroChannel(channel, cues) {
+  if (!confirm('Удалить канал ' + channel + ' из ' + cues.length + ' кью где он = 0?')) return;
+  for (const cue of cues) {
+    await fetch('/api/cmd', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({cmd: 'CUE ' + cue + ' CHAN ' + channel + ' REMOVE'})
+    });
+    await new Promise(r => setTimeout(r, 100));
+  }
+  alert('Готово: канал ' + channel + ' убран из ' + cues.length + ' кью');
+}
+</script>
+</body>
+</html>
