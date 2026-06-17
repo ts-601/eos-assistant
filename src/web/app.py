@@ -20,6 +20,10 @@ def claude_ask(text):
     return {"reply": result["text"], "cmds": result["commands"]}
 
 def _run_cmd(cmd):
+    from agent import sandbox
+    if sandbox.is_enabled():
+        result = sandbox.execute(cmd)
+        return True  # в песочнице всегда "успех"
     return run_eos_cmd(cmd)
 
 def _push(data):
@@ -309,6 +313,22 @@ def api_go():   go();   return jsonify({"ok":True})
 def api_stop(): stop(); return jsonify({"ok":True})
 @app.route("/api/state")
 def api_state(): return jsonify(get_state())
+
+@app.route("/api/agent/sandbox", methods=["GET", "POST"])
+def api_sandbox():
+    """Включить/выключить режим песочницы."""
+    from agent import sandbox
+    if request.method == "POST":
+        enabled = (request.json or {}).get("enabled", False)
+        if _agent:
+            _agent.set_sandbox(enabled)
+        return jsonify({"ok": True, "sandbox": sandbox.is_enabled()})
+    return jsonify({"sandbox": sandbox.is_enabled()})
+
+@app.route("/api/agent/sandbox/log")
+def api_sandbox_log():
+    from agent import sandbox
+    return jsonify({"log": sandbox.get_log(50)})
 
 @app.route("/api/agent/save_solution", methods=["POST"])
 def api_save_solution():

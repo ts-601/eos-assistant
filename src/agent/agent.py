@@ -15,6 +15,8 @@ import time
 import anthropic
 from datetime import datetime
 from pathlib import Path
+from agent.knowledge.indexer import ManualIndex
+import agent.sandbox as sandbox
 
 AGENT_DIR   = Path(__file__).parent
 KNOWLEDGE   = AGENT_DIR / "knowledge"
@@ -26,12 +28,20 @@ MODEL = "claude-sonnet-4-6"
 class EOSAgent:
     def __init__(self, api_key: str):
         self.client = anthropic.Anthropic(api_key=api_key)
-        self._manual     = self._load_file(KNOWLEDGE / "eos_manual.md")
+        self._index      = ManualIndex()
         self._rules      = self._load_file(KNOWLEDGE / "agent_rules.md")
         self._solutions  = self._load_solutions()
         self._session_log = []
+        print(f"[Agent] Индекс мануала: {self._index.stats}")
 
     # ─── Загрузка знаний ──────────────────────────────────────────────────────
+
+    @property
+    def sandbox_enabled(self) -> bool:
+        return sandbox.is_enabled()
+
+    def set_sandbox(self, enabled: bool):
+        sandbox.enable() if enabled else sandbox.disable()
 
     def _load_file(self, path: Path) -> str:
         try:
@@ -48,20 +58,25 @@ class EOSAgent:
             texts.append(f"### {f.stem}\n" + f.read_text(encoding="utf-8"))
         return "\n\n".join(texts)
 
-    def _build_system_prompt(self, eos_state: dict) -> str:
+    def _build_system_prompt(self, eos_state: dict, query: str = "") -> str:
         """Собрать системный промпт с актуальным контекстом."""
         state_str = json.dumps(eos_state, ensure_ascii=False, indent=2)
         solutions_block = f"\n## Записанные решения\n{self._solutions}" if self._solutions else ""
+        sandbox_block = "\n⚠ РЕЖИМ ПЕСОЧНИЦЫ АКТИВЕН — команды не отправляются на реальный пульт." if sandbox.is_enabled() else ""
+
+        # Индексный поиск: только релевантные секции мануала
+        manual_context = self._index.get_context(query, max_chars=2500) if query else self._index.get_context("cue go chan", max_chars=1500)
 
         return f"""Ты — умный ассистент светового пульта ETC EOS.
+{sandbox_block}
 
 ## Текущее состояние пульта
 ```json
 {state_str}
 ```
 
-## Мануал EOS (твоя база знаний)
-{self._manual}
+## Релевантные разделы мануала EOS
+{manual_context}
 
 ## Правила работы
 {self._rules}
@@ -100,7 +115,7 @@ class EOSAgent:
                 "save_solution": str,  — если агент хочет сохранить решение
             }
         """
-        system = self._build_system_prompt(eos_state)
+        system = self._build_system_prompt(eos_state, query=user_message)
 
         # Строим историю для API
         messages = []
