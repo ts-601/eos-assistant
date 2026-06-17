@@ -4,46 +4,20 @@ from flask import Flask, Response, request, jsonify, render_template
 from core.osc_bridge import go, stop, run_eos_cmd, get_state, on_event, on_osc_log, get_osc_log, get_cue_list, request_cue_list, on_cue_list, get_cmd_history, on_cmd_history, get_fader_state, on_fader_state, fader_set, fader_bump, fader_stop, fader_page, get_fader_page, get_active_cue_list_num, reconnect
 from voice.parser import parse
 from config import WEB_PORT, ANTHROPIC_API_KEY
-import anthropic, re
+from agent.agent import EOSAgent
 
 app = Flask(__name__)
 _sse_queues = []
 _osc_monitor_queues = []
 _history = []
 
-def _load_context():
-    path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "context.md")
-    try:
-        return open(path, encoding="utf-8").read()
-    except Exception:
-        return ""
-
-_CONTEXT = _load_context()
-
-SYSTEM = """Ты ассистент оператора светового пульта ETC EOS. User ID 777.
-Всегда отвечай ТОЛЬКО JSON без markdown:
-{"reply": "текст пользователю", "cmds": ["CMD1", "CMD2"]}
-
-Правила:
-- "cmds" — только EOS CLI команды для немедленного выполнения
-- Если пользователь говорит "через N секунд/минут" — таймер обрабатывается на стороне клиента, ты НЕ добавляешь TIME N в команду и НЕ пишешь что уже выполнено. Пиши reply: "Запланировано: [что сделаю]"
-- Если вопрос без команд — cmds: []
-- Отвечай по-русски, кратко
-
-""" + _CONTEXT
+_agent = EOSAgent(api_key=ANTHROPIC_API_KEY) if ANTHROPIC_API_KEY else None
 
 def claude_ask(text):
-    if not ANTHROPIC_API_KEY:
+    if not _agent:
         return {"reply": "API ключ не задан в config.py", "cmds": []}
-    client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
-    msgs = _history[-10:] + [{"role":"user","content":text}]
-    resp = client.messages.create(model="claude-sonnet-4-6", max_tokens=1000, system=SYSTEM, messages=msgs)
-    raw = resp.content[0].text.strip()
-    try:
-        m = re.search(r"\{.*\}", raw, re.DOTALL)
-        if m: return json.loads(m.group())
-    except: pass
-    return {"reply": raw, "cmds": []}
+    result = _agent.chat(text, get_state(), _history)
+    return {"reply": result["text"], "cmds": result["commands"]}
 
 def _run_cmd(cmd):
     return run_eos_cmd(cmd)
@@ -335,6 +309,27 @@ def api_go():   go();   return jsonify({"ok":True})
 def api_stop(): stop(); return jsonify({"ok":True})
 @app.route("/api/state")
 def api_state(): return jsonify(get_state())
+
+@app.route("/api/agent/save_solution", methods=["POST"])
+def api_save_solution():
+    """Сохранить решение в базу знаний агента."""
+    if not _agent:
+        return jsonify({"error": "agent not initialized"})
+    d = request.json or {}
+    title    = d.get("title", "").strip()
+    problem  = d.get("problem", "").strip()
+    solution = d.get("solution", "").strip()
+    if not title or not solution:
+        return jsonify({"error": "title and solution required"})
+    _agent.save_solution(title, problem, solution)
+    return jsonify({"ok": True})
+
+@app.route("/api/agent/reload", methods=["POST"])
+def api_agent_reload():
+    """Перечитать мануал и записанные решения."""
+    if _agent:
+        _agent.reload_knowledge()
+    return jsonify({"ok": True})
 
 @app.route("/api/cmd", methods=["POST"])
 def api_cmd():
