@@ -179,6 +179,10 @@ body { display: flex; flex-direction: column; }
 #tts-voice-picker.open { display:block; }
 #tts-voice-picker select { width:100%; background:var(--bg3); color:var(--text); border:1px solid var(--border); border-radius:5px; padding:5px 8px; font-size:13px; }
 #tts-voice-picker label { font-size:11px; color:var(--text-dim,#888); display:block; margin-bottom:4px; }
+#mic-device-picker { display:none; position:absolute; bottom:60px; left:0; background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:6px; z-index:100; min-width:240px; box-shadow:0 4px 16px #0006; }
+#mic-device-picker.open { display:block; }
+#mic-device-picker select { width:100%; background:var(--bg3); color:var(--text); border:1px solid var(--border); border-radius:5px; padding:5px 8px; font-size:13px; }
+#mic-device-picker label { font-size:11px; color:var(--text-dim,#888); display:block; margin-bottom:4px; }
 
 .voice-wave { display:flex; align-items:center; gap:3px; height:36px; padding:0 6px; }
 .voice-wave span {
@@ -546,7 +550,13 @@ body { display: flex; flex-direction: column; }
   <div class="chat-area" id="live-chat"></div>
 
   <div class="chat-input-row">
-    <button class="ibtn voice" id="voice-btn">🎙</button>
+    <div style="position:relative">
+      <button class="ibtn voice" id="voice-btn">🎙</button>
+      <div id="mic-device-picker">
+        <label>Микрофон:</label>
+        <select id="mic-device-select" onchange="_micDeviceChanged()"></select>
+      </div>
+    </div>
     <div class="voice-wave" id="voice-wave-1" style="display:none">
       <span></span><span></span><span></span><span></span><span></span>
     </div>
@@ -594,8 +604,8 @@ body { display: flex; flex-direction: column; }
 <!-- ═══ CUE LIST ═══ -->
 <div id="pg-cues" class="page">
   <div style="display:flex;gap:8px;padding:8px 12px;border-bottom:1px solid var(--border);flex-shrink:0;align-items:center">
-    <button class="cue-go-btn" style="flex:1;padding:7px 0;font-size:13px" onclick="cmd('GO TO CUE OUT')">⬛ OUT</button>
-    <button class="cue-go-btn" style="flex:1;padding:7px 0;font-size:13px" onclick="cmd('GO TO CUE 0')">⏮ CUE 0</button>
+    <button class="cue-go-btn" style="flex:1;padding:7px 0;font-size:13px" onclick="cmd('GO TO CUE OUT')">OUT</button>
+    <button class="cue-go-btn" style="flex:1;padding:7px 0;font-size:13px" onclick="cmd('GO TO CUE 0')">CUE 0</button>
     <div style="width:1px;background:var(--border);height:28px;margin:0 2px"></div>
     <span style="font-size:11px;color:var(--dim);white-space:nowrap">Лист:</span>
     <input id="cue-list-input" type="number" min="1" max="99" value="1"
@@ -1098,6 +1108,57 @@ async function sendAI() {
 /* ══════════ PUSH-TO-TALK ══════════ */
 let _mediaRec = null, _recChunks = [], _recStream = null;
 
+/* ══════════ MIC DEVICE PICKER ══════════ */
+let _micDeviceId = null;
+let _micPressTimer = null;
+
+async function _micLoadDevices() {
+  const sel = document.getElementById('mic-device-select');
+  if (!sel) return;
+  // Запросить разрешение если ещё нет — иначе браузер скрывает названия
+  try { const s = await navigator.mediaDevices.getUserMedia({audio:true}); s.getTracks().forEach(t=>t.stop()); } catch(e) {}
+  const devices = await navigator.mediaDevices.enumerateDevices();
+  const mics = devices.filter(d => d.kind === 'audioinput');
+  sel.innerHTML = '';
+  mics.forEach(d => {
+    const opt = document.createElement('option');
+    opt.value = d.deviceId;
+    opt.textContent = d.label || `Микрофон ${sel.options.length + 1}`;
+    if (d.deviceId === _micDeviceId) opt.selected = true;
+    sel.appendChild(opt);
+  });
+  if (!_micDeviceId && mics.length) _micDeviceId = mics[0].deviceId;
+}
+
+function _micDeviceChanged() {
+  const sel = document.getElementById('mic-device-select');
+  _micDeviceId = sel.value;
+  setTimeout(() => document.getElementById('mic-device-picker').classList.remove('open'), 600);
+}
+
+function _micLongPress() {
+  const picker = document.getElementById('mic-device-picker');
+  _micLoadDevices();
+  picker.classList.toggle('open');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Долгое нажатие на все кнопки микрофона
+  document.querySelectorAll('.ibtn.voice').forEach(btn => {
+    btn.addEventListener('pointerdown', () => {
+      _micPressTimer = setTimeout(_micLongPress, 450);
+    });
+    btn.addEventListener('pointerup',    () => clearTimeout(_micPressTimer));
+    btn.addEventListener('pointerleave', () => clearTimeout(_micPressTimer));
+  });
+  // Закрыть при клике вне
+  document.addEventListener('pointerdown', e => {
+    const picker = document.getElementById('mic-device-picker');
+    if (picker && !picker.contains(e.target) && !e.target.classList.contains('voice'))
+      picker.classList.remove('open');
+  });
+});
+
 function _voiceBtns() { return document.querySelectorAll('.ibtn.voice'); }
 function _voiceWaves(btn) {
   // найти .voice-wave рядом с кнопкой (следующий sibling)
@@ -1112,7 +1173,8 @@ function _voiceWaves(btn) {
 async function _startVoice(btn) {
   if (_mediaRec) return;
   try {
-    _recStream = await navigator.mediaDevices.getUserMedia({audio:true});
+    const audioConstraints = _micDeviceId ? {deviceId: {exact: _micDeviceId}} : true;
+    _recStream = await navigator.mediaDevices.getUserMedia({audio: audioConstraints});
     _recChunks = [];
     _mediaRec = new MediaRecorder(_recStream);
     _mediaRec.ondataavailable = e => { if (e.data.size > 0) _recChunks.push(e.data); };
