@@ -173,6 +173,8 @@ body { display: flex; flex-direction: column; }
 .ibtn.send  { background: var(--accent); color: #fff; }
 .ibtn.voice { background: var(--bg3); color: var(--text); border: 1px solid var(--border); }
 .ibtn.voice.rec { background: var(--red); color: #fff; border-color: var(--red); }
+.ibtn.tts-toggle { background: var(--bg3); color: var(--text); border: 1px solid var(--border); opacity: 0.45; transition: opacity .15s, background .15s; }
+.ibtn.tts-toggle.active { background: var(--accent); color: #fff; border-color: var(--accent); opacity: 1; }
 
 .voice-wave { display:flex; align-items:center; gap:3px; height:36px; padding:0 6px; }
 .voice-wave span {
@@ -544,6 +546,7 @@ body { display: flex; flex-direction: column; }
     <div class="voice-wave" id="voice-wave-1" style="display:none">
       <span></span><span></span><span></span><span></span><span></span>
     </div>
+    <button class="ibtn tts-toggle" id="tts-btn" title="Ответ голосом" onclick="toggleTTS()">🔊</button>
     <input id="live-input" type="text" placeholder="Команда или вопрос…"
            onkeydown="if(event.key==='Enter')sendLive()">
     <button class="ibtn send" onclick="sendLive()">↑</button>
@@ -905,6 +908,38 @@ function _pinScheduled(area, text, schedule, cmdsToRun) {
   cdEl.textContent = '⏱ ' + _fmtCountdown(remaining);
 }
 
+/* ══════════ TTS ══════════ */
+let _ttsEnabled = false;
+let _ttsUtterance = null;
+
+function toggleTTS() {
+  _ttsEnabled = !_ttsEnabled;
+  const btn = document.getElementById('tts-btn');
+  btn.classList.toggle('active', _ttsEnabled);
+  btn.title = _ttsEnabled ? 'Ответ голосом: ВКЛ' : 'Ответ голосом: ВЫКЛ';
+  if (!_ttsEnabled && _ttsUtterance) {
+    speechSynthesis.cancel();
+    _ttsUtterance = null;
+  }
+}
+
+function _speak(text) {
+  if (!_ttsEnabled || !text) return;
+  speechSynthesis.cancel();
+  _ttsUtterance = new SpeechSynthesisUtterance(text);
+  _ttsUtterance.lang = 'ru-RU';
+  _ttsUtterance.rate = 1.05;
+  _ttsUtterance.pitch = 1;
+  // Выбрать русский голос если есть
+  const voices = speechSynthesis.getVoices();
+  const ruVoice = voices.find(v => v.lang.startsWith('ru'));
+  if (ruVoice) _ttsUtterance.voice = ruVoice;
+  speechSynthesis.speak(_ttsUtterance);
+}
+
+// Предзагрузка голосов
+speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices();
+
 /* ══════════ LIVE CHAT ══════════ */
 function appendMsg(container, text, who) {
   const wrap = document.createElement('div');
@@ -921,6 +956,8 @@ function appendMsg(container, text, who) {
   container.scrollTop = 99999;
   // remove() на el удаляет весь wrap (для совместимости с голосовым заполнителем)
   el.remove = () => wrap.remove();
+  // TTS только для ответов бота
+  if (who === 'bot') _speak(text);
   return el;
 }
 
