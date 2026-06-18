@@ -93,11 +93,8 @@ ANTHROPIC_API_KEY = "sk-ant-..."
 Репозиторий: `ts-601/eos-assistant`
 
 ```bash
-# Push (нужен gh auth):
-TOKEN=$(gh auth token)
-git remote set-url origin "https://ts-601:${TOKEN}@github.com/ts-601/eos-assistant.git"
+# Push — credentials сохранены в ~/.git-credentials, просто:
 git push
-git remote set-url origin https://github.com/ts-601/eos-assistant.git
 ```
 
 `src/config.py` исключён из git через `.gitignore` — содержит реальный API ключ и IP пульта.
