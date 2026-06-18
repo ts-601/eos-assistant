@@ -146,16 +146,14 @@ class EOSAgent:
             except Exception:
                 pass
 
-        # Убираем теги cmd из текста
-        clean_text = re.sub(r'<cmd>.*?</cmd>', '', text, flags=re.DOTALL).strip()
+        # Убираем теги из текста
+        clean_text = re.sub(r'<cmd>.*?</cmd>', '', text, flags=re.DOTALL)
+        clean_text = re.sub(r'<learn>.*?</learn>', '', clean_text, flags=re.DOTALL).strip()
 
-        # Проверяем хочет ли агент сохранить решение
-        save_solution = None
-        if "[SAVE_SOLUTION:" in text:
-            m = re.search(r'\[SAVE_SOLUTION:(.*?)\]', text)
-            if m:
-                save_solution = m.group(1).strip()
-                clean_text = clean_text.replace(m.group(0), "").strip()
+        # Автосохранение решения из тега <learn>
+        learn_match = re.search(r'<learn>(.*?)</learn>', text, re.DOTALL)
+        if learn_match:
+            self._auto_learn(user_message, learn_match.group(1).strip())
 
         # Логируем
         self._log(user_message, clean_text, commands)
@@ -164,10 +162,18 @@ class EOSAgent:
             "text": clean_text,
             "commands": commands,
             "needs_confirm": False,
-            "save_solution": save_solution,
         }
 
     # ─── Память и обучение ────────────────────────────────────────────────────
+
+    def _auto_learn(self, user_message: str, learn_block: str):
+        """Автоматически сохранить решение из тега <learn>."""
+        lines = {l.split(':', 1)[0].strip(): l.split(':', 1)[1].strip()
+                 for l in learn_block.splitlines() if ':' in l}
+        title    = lines.get('title', user_message[:40])
+        problem  = lines.get('problem', user_message)
+        solution = lines.get('solution', learn_block)
+        self.save_solution(title, problem, solution)
 
     def save_solution(self, title: str, problem: str, solution: str):
         """Записать найденное решение в базу знаний."""
