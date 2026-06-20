@@ -72,7 +72,7 @@ def api_chat():
     if quick and len(text.split()) <= 5:
         if not dry_run:
             ok = _run_cmd(quick)
-            reply = ("Выполнено: " if ok else "EOS недоступен, не отправлено: ") + quick
+            reply = ("Отправлено: " if ok else "EOS недоступен: ") + quick
         else:
             reply = quick
         _history.extend([{"role":"user","content":text},{"role":"assistant","content":reply}])
@@ -127,7 +127,7 @@ def api_voice():
         quick = parse(text)
         if quick and len(text.split()) <= 5:
             ok = _run_cmd(quick)
-            reply = ("Выполнено: " if ok else "EOS недоступен, не отправлено: ") + quick
+            reply = ("Отправлено: " if ok else "EOS недоступен: ") + quick
             _history.extend([{"role":"user","content":text},{"role":"assistant","content":reply}])
             d = {"reply": reply, "cmds": [quick]}
         else:

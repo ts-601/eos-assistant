@@ -317,6 +317,11 @@ def run_eos_cmd(cmd):
     m = re.match(r"GO TO CUE ([\d.]+)", c)
     if m: return go_to_cue(m.group(1))
 
+    m = re.match(r"CUE ([\d.]+)\s+TIME\s+([\d.]+)", c)
+    if m:
+        # EOS не поддерживает изменение времени кью через OSC CLI
+        return None
+
     m = re.match(r"CUE ([\d.]+) MOVE TO CUE ([\d.]+)", c)
     if m: return move_cue(m.group(1), m.group(2))
 
