@@ -58,7 +58,7 @@ class EOSAgent:
             texts.append(f"### {f.stem}\n" + f.read_text(encoding="utf-8"))
         return "\n\n".join(texts)
 
-    def _build_system_prompt(self, eos_state: dict, query: str = "") -> str:
+    def _build_system_prompt(self, eos_state: dict, query: str = "", cue_list: dict = None) -> str:
         """Собрать системный промпт с актуальным контекстом."""
         state_str = json.dumps(eos_state, ensure_ascii=False, indent=2)
         solutions_block = f"\n## Записанные решения\n{self._solutions}" if self._solutions else ""
@@ -67,13 +67,21 @@ class EOSAgent:
         # Индексный поиск: только релевантные секции мануала
         manual_context = self._index.get_context(query, max_chars=2500) if query else self._index.get_context("cue go chan", max_chars=1500)
 
-        return f"""Ты — умный ассистент светового пульта ETC EOS.
+        # Кью-лист для ответов на вопросы о названиях кью
+        cue_block = ""
+        if cue_list:
+            items = cue_list if isinstance(cue_list, list) else sorted(cue_list.values(), key=lambda x: float(x['num']))
+            lines = [f"  {v['num']}: {v.get('label','—')} {('/ '+v['notes']) if v.get('notes') else ''}" for v in items]
+            cue_block = "\n## Кью-лист (названия и заметки)\n" + "\n".join(lines[:40])
+
+        return f"""Ты — EOS Agent, оператор светового пульта ETC EOS.
 {sandbox_block}
 
 ## Текущее состояние пульта
 ```json
 {state_str}
 ```
+{cue_block}
 
 ## Релевантные разделы мануала EOS
 {manual_context}
@@ -83,27 +91,22 @@ class EOSAgent:
 {solutions_block}
 
 ## Твоя задача
-1. Анализируй запрос пользователя в контексте текущего состояния пульта
-2. Если запрос неоднозначен — уточни (не выполняй вслепую)
-3. Если знаешь решение — выполни и объясни кратко
-4. Если встретил новую проблему и нашёл решение — попроси меня записать его
-5. Отвечай на русском, кратко и по делу
+1. Анализируй запрос в контексте состояния пульта и кью-листа
+2. Если спрашивают НАЗВАНИЕ/ОПИСАНИЕ кью — отвечай текстом из кью-листа выше, НЕ отправляй команду CUE
+3. Если запрос неоднозначен — уточни, не выполняй вслепую
+4. Отвечай на русском, кратко
 
-## Формат команды для выполнения
-Если нужно выполнить команду на пульте — верни JSON в теге <cmd>:
+## ⚠ ОБЯЗАТЕЛЬНО: опасные команды
+DELETE CUE, RECORD (перезапись), массовые изменения — ТОЛЬКО после явного "да" от пользователя.
+Не вкладывай <cmd> с DELETE до подтверждения. Сначала спроси: "Удалить кью X? (да/нет)"
+
+## Формат команды
 <cmd>{{"cmd": "GO TO CUE 5"}}</cmd>
-
-Можно несколько команд:
-<cmd>{{"cmd": "GO TO CUE OUT"}}</cmd>
-<cmd>{{"cmd": "BLIND"}}</cmd>
-
-Если команда опасная (DELETE, массовые изменения) — сначала спроси подтверждение,
-не вкладывай <cmd> до получения "да".
 """
 
     # ─── Основной цикл ────────────────────────────────────────────────────────
 
-    def chat(self, user_message: str, eos_state: dict, history: list) -> dict:
+    def chat(self, user_message: str, eos_state: dict, history: list, cue_list: dict = None) -> dict:
         """
         Обработать сообщение пользователя.
 
@@ -115,7 +118,7 @@ class EOSAgent:
                 "save_solution": str,  — если агент хочет сохранить решение
             }
         """
-        system = self._build_system_prompt(eos_state, query=user_message)
+        system = self._build_system_prompt(eos_state, query=user_message, cue_list=cue_list)
 
         # Строим историю для API
         messages = []

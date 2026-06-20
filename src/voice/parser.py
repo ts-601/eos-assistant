@@ -26,6 +26,7 @@ def _normalize_nums(t):
 # Однозначные команды без параметров — проверяются в первую очередь
 SINGLE_PATTERNS = [
     (r"go\s*to\s*(kue|cue|куэ|кью)\s*(out|аут|аута)",  "GO TO CUE OUT"),
+    (r"(?:перейди|иди|на)\s*(?:кью|cue|kue)?\s*(out|аут|аута|ноль|нуль|нул)", "GO TO CUE OUT"),
     # GO только если НЕТ "to cue N" — иначе перехватит "go to cue 2"
     (r"(\bgo\b|davaj|dal|sled|next|\bго\b|давай|след)(?!\s*to\s*(kue|cue|куэ|кью)\s*\d)", "GO"),
     (r"(stop|stoj|hold|стоп|стой|держи)",                "STOP"),
@@ -91,6 +92,14 @@ PART_PATTERNS = [
 def parse(text):
     t  = _normalize_nums(text.lower().strip())
     t0 = text.strip()  # оригинальный регистр (для label)
+
+    # Вопросы про кью → отдать агенту (он знает _cue_list)
+    if re.search(r'\b(как\s+называет|что\s+за\s+кью|имя\s+кью|название\s+кью|name\s+of\s+cue|label\s+of\s+cue|расскаж|опиши\s+кью|что\s+такое\s+кью)', t):
+        return None
+
+    # Команды удаления → только агент (он попросит подтверждение)
+    if re.search(r'\b(удал[иь]|delete|стер[иь]|убер[иь]|убра[тьи])\b', t):
+        return None
 
     # Сначала проверяем однозначные команды (GO, STOP и т.д.)
     for pat, cmd in SINGLE_PATTERNS:

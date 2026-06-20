@@ -16,7 +16,7 @@ _agent = EOSAgent(api_key=ANTHROPIC_API_KEY) if ANTHROPIC_API_KEY else None
 def claude_ask(text):
     if not _agent:
         return {"reply": "API ключ не задан в config.py", "cmds": []}
-    result = _agent.chat(text, get_state(), _history)
+    result = _agent.chat(text, get_state(), _history, cue_list=get_cue_list())
     return {"reply": result["text"], "cmds": result["commands"]}
 
 def _run_cmd(cmd):
@@ -76,7 +76,9 @@ def api_chat():
         else:
             reply = quick
         _history.extend([{"role":"user","content":text},{"role":"assistant","content":reply}])
-        _push_chat(text, reply, [quick])
+        # SSE push только для внешних вызовов (не из браузера — браузер сам обновляет UI)
+        if body.get("push_sse"):
+            _push_chat(text, reply, [quick])
         return jsonify({"reply":reply,"cmds":[quick]})
     result = claude_ask(text)
     reply = result.get("reply","")
@@ -86,7 +88,8 @@ def api_chat():
         if failed:
             reply += " (EOS недоступен: " + ", ".join(failed) + ")"
     _history.extend([{"role":"user","content":text},{"role":"assistant","content":reply}])
-    _push_chat(text, reply, cmds)
+    if body.get("push_sse"):
+        _push_chat(text, reply, cmds)
     return jsonify({"reply":reply,"cmds":cmds})
 
 @app.route("/api/transcribe", methods=["POST"])

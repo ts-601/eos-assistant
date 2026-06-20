@@ -275,12 +275,16 @@ def get_fader_page():
 
 def blind():
     _push_cmd_history("BLIND")
-    _key("blind")
+    with _cmd_lock:
+        _clear_cmd()
+        _send(_CMD_PATH, ["Blind#"])
     return True
 
 def live():
     _push_cmd_history("LIVE")
-    _key("live")
+    with _cmd_lock:
+        _clear_cmd()
+        _send(_CMD_PATH, ["Live#"])
     return True
 
 def send_cmd(cmd):
