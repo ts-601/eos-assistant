@@ -768,6 +768,13 @@ es.onmessage = e => {
   } else if (d.type === 'cmd_history_init') {
     const h = document.getElementById('cmd-history');
     if (h) { h.innerHTML = ''; d.entries.forEach(appendCmdHistory); }
+  } else if (d.type === 'chat') {
+    const area = document.getElementById('live-chat');
+    if (area) {
+      appendMsg(area, d.user, 'user');
+      appendMsg(area, d.bot, 'bot');
+      if (d.bot) _speak(d.bot);
+    }
   } else {
     state = d;
     updateLive();

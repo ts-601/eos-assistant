@@ -59,6 +59,9 @@ def events():
     return Response(gen(), mimetype="text/event-stream",
                     headers={"Cache-Control":"no-cache","X-Accel-Buffering":"no"})
 
+def _push_chat(user_text, bot_reply, cmds=None):
+    _push({"type": "chat", "user": user_text, "bot": bot_reply, "cmds": cmds or []})
+
 @app.route("/api/chat", methods=["POST"])
 def api_chat():
     body = request.json or {}
@@ -73,6 +76,7 @@ def api_chat():
         else:
             reply = quick
         _history.extend([{"role":"user","content":text},{"role":"assistant","content":reply}])
+        _push_chat(text, reply, [quick])
         return jsonify({"reply":reply,"cmds":[quick]})
     result = claude_ask(text)
     reply = result.get("reply","")
@@ -82,6 +86,7 @@ def api_chat():
         if failed:
             reply += " (EOS недоступен: " + ", ".join(failed) + ")"
     _history.extend([{"role":"user","content":text},{"role":"assistant","content":reply}])
+    _push_chat(text, reply, cmds)
     return jsonify({"reply":reply,"cmds":cmds})
 
 @app.route("/api/transcribe", methods=["POST"])
