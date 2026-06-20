@@ -508,12 +508,16 @@ def _dispatch(addr, args):
                 _cue_list[num]["notes"] = str(args[0])
                 _notify_cues()
 
-        m = _re.match(r"^/eos/out/event/cue/1/([\d.]+)/fire$", addr)
+        m = _re.match(r"^/eos/out/event/cue/(\d+)/([\d.]+)/fire$", addr)
         if m:
-            num = m.group(1)
-            if num not in _cue_list:
-                _cue_list[num] = {"num": num, "label": ""}
-                _notify_cues()
+            lst, num = m.group(1), m.group(2)
+            if lst == str(_active_cue_list_num):
+                if num not in _cue_list:
+                    _cue_list[num] = {"num": num, "label": ""}
+                    _notify_cues()
+                label = _cue_list.get(num, {}).get("label", "")
+                _state["active_cue"] = f"{lst}/{num} {label}".strip()
+                _notify()
 
         m = _re.match(r"^/eos/out/fader/{}/(\d+)/name$".format(FADER_BANK), addr)
         if m and args:
