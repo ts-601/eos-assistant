@@ -365,6 +365,7 @@ def api_cmd():
     if not cmd: return jsonify({"error": "empty"})
     ok = run_eos_cmd(cmd)
     return jsonify({"ok": ok, "cmd": cmd})
+
 @app.route("/monitor/events")
 def monitor_events():
     q = queue.Queue(maxsize=200)

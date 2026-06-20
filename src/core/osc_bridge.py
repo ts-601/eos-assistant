@@ -137,8 +137,8 @@ def _cli(cmd):
 def _clear_cmd():
     # Shift+Clear — полная очистка буфера и ошибок пользователя
     _send(_KEY_PATH + "shift", [1]); time.sleep(0.05)
-    _send(_KEY_PATH + "clr",   [1]); time.sleep(0.05)
-    _send(_KEY_PATH + "clr",   [0]); time.sleep(0.05)
+    _send(_KEY_PATH + "clear", [1]); time.sleep(0.05)
+    _send(_KEY_PATH + "clear", [0]); time.sleep(0.05)
     _send(_KEY_PATH + "shift", [0]); time.sleep(0.3)
 
 def go():
@@ -322,11 +322,12 @@ def run_eos_cmd(cmd):
         _push_cmd_history("CUE {} TIME {}".format(num, t))
         with _cmd_lock:
             _clear_cmd()
-            _send(_CMD_PATH, ["Blind#"])
-            time.sleep(0.5)
+            _send(_KEY_PATH + "blind", [1]); time.sleep(0.1)
+            _send(_KEY_PATH + "blind", [0]); time.sleep(0.6)
             _send(_CMD_PATH, ["Cue {} Time {}#".format(num, t)])
-            time.sleep(0.5)
-            _send(_CMD_PATH, ["Live#"])
+            time.sleep(0.6)
+            _send(_KEY_PATH + "live",  [1]); time.sleep(0.1)
+            _send(_KEY_PATH + "live",  [0])
         return True
 
     m = re.match(r"CUE ([\d.]+) MOVE TO CUE ([\d.]+)", c)
