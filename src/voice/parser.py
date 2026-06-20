@@ -42,6 +42,11 @@ PART_PATTERNS = [
     # Перемещение CUE: "перенеси кью 1.4 на 1.41" → CUE 1.4 MOVE TO CUE 1.41
     ("move_cue",  r"(?:перенес[иь]|перемест[иь]|move)\s*(?:kue|cue|куэ|кью)?\s*(\d+[.,]?\d*)\s*(?:на|to|в)\s*(?:kue|cue|куэ|кью)?\s*(\d+[.,]?\d*)",
                   lambda m: "CUE {} MOVE TO CUE {}".format(m.group(1).replace(",","."), m.group(2).replace(",","."))),
+    # Установить время кью: "установи время кью 5 = 3" / "кью 1 время 2" → CUE 1 TIME 2
+    ("set_cue_time", r"(?:установ[иь]|set|поставь|измен[иь])\s*(?:время|time|врем)\s*(?:kue|cue|куэ|кью)?\s*(\d+[.,]?\d*)\s*(?:=|на|в|:)?\s*(\d+[.,]?\d*)",
+                  lambda m: "CUE {} TIME {}".format(m.group(1).replace(",","."), m.group(2).replace(",","."))),
+    ("set_cue_time2", r"(?:kue|cue|куэ|кью)\s*(\d+[.,]?\d*)\s*(?:время|time|врем)\s*(\d+[.,]?\d*)",
+                  lambda m: "CUE {} TIME {}".format(m.group(1).replace(",","."), m.group(2).replace(",","."))),
     # Переход к CUE со временем кью: "перейди на кью 2 со временем кью" → GO TO CUE 2 TIME
     ("goto_cue_time", r"(?:go\s*to\s*(?:kue|cue|куэ|кью)|(?:перейди|перейти|иди|зайди)\s*(?:на\s*)?(?:kue|cue|куэ|кью)?|на\s*кью)\s*(\d+[.,]?\d*)\s*(?:со\s*временем(?:\s*кью)?|with\s*time|с\s*тайм[ао]м?)",
                   lambda m: "GO TO CUE {} TIME".format(m.group(1).replace(",","."))),
@@ -103,7 +108,7 @@ def parse(text):
         return None
 
     # Приоритет: готовые команды с переходом/записью
-    for key in ("label_cue", "move_cue", "goto_cue_time", "goto_cue", "record_cue", "macro", "park"):
+    for key in ("label_cue", "move_cue", "set_cue_time", "set_cue_time2", "goto_cue_time", "goto_cue", "record_cue", "macro", "park"):
         if key in parts:
             return parts[key]
 
