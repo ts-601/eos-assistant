@@ -135,12 +135,11 @@ def _cli(cmd):
     _send(_CMD_PATH, [cmd + "#"])
 
 def _clear_cmd():
-    _send(_CMD_PATH, ["#"])
-    time.sleep(0.15)
-    for _ in range(2):
-        _send(_KEY_PATH + "escape", [1]); time.sleep(0.05)
-        _send(_KEY_PATH + "escape", [0]); time.sleep(0.15)
-    time.sleep(0.2)
+    # Shift+Clear — полная очистка буфера и ошибок пользователя
+    _send(_KEY_PATH + "shift", [1]); time.sleep(0.05)
+    _send(_KEY_PATH + "clr",   [1]); time.sleep(0.05)
+    _send(_KEY_PATH + "clr",   [0]); time.sleep(0.05)
+    _send(_KEY_PATH + "shift", [0]); time.sleep(0.3)
 
 def go():
     _push_cmd_history("GO")
@@ -319,8 +318,16 @@ def run_eos_cmd(cmd):
 
     m = re.match(r"CUE ([\d.]+)\s+TIME\s+([\d.]+)", c)
     if m:
-        # EOS не поддерживает изменение времени кью через OSC CLI
-        return None
+        num, t = m.group(1), m.group(2)
+        _push_cmd_history("CUE {} TIME {}".format(num, t))
+        with _cmd_lock:
+            _clear_cmd()
+            _send(_CMD_PATH, ["Blind#"])
+            time.sleep(0.5)
+            _send(_CMD_PATH, ["Cue {} Time {}#".format(num, t)])
+            time.sleep(0.5)
+            _send(_CMD_PATH, ["Live#"])
+        return True
 
     m = re.match(r"CUE ([\d.]+) MOVE TO CUE ([\d.]+)", c)
     if m: return move_cue(m.group(1), m.group(2))
