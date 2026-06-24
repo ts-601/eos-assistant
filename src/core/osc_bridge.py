@@ -304,8 +304,19 @@ def run_eos_cmd(cmd):
     if c == "LIVE":          return live()
     if c == "UPDATE":        return update_cue()
     if c == "UNDO":
-        _push_cmd_history("UNDO")
-        _key("undo"); return True
+        _push_cmd_history("UNDO"); _key("undo"); return True
+    if c == "SNEAK":
+        _push_cmd_history("SNEAK")
+        with _cmd_lock: _clear_cmd(); _send(_CMD_PATH, ["Sneak#"])
+        return True
+    if c == "LAST":
+        _push_cmd_history("LAST"); _key("last"); return True
+    if c == "NEXT":
+        _push_cmd_history("NEXT"); _key("next"); return True
+    if c == "SELECT ACTIVE":
+        _push_cmd_history("SELECT ACTIVE")
+        with _cmd_lock: _clear_cmd(); _send(_CMD_PATH, ["Select_Active#"])
+        return True
 
     m = re.match(r"GO TO CUE ([\d.]+)\s+TIME\s+([\d.]+)", c)
     if m: return go_to_cue(m.group(1), m.group(2))
@@ -355,10 +366,18 @@ def run_eos_cmd(cmd):
     m = re.match(r"CUE ([\d.]+)$", c)
     if m: return go_to_cue(m.group(1))
 
-    m = re.match(r"CHAN ([\d]+)\s+@\s+(FULL|[\d]+)", c)
+    m = re.match(r"CHAN ([\d\s]+)\s*@\s*(FULL|OUT|[+\-]?[\d]+)", c)
     if m:
-        ch, lvl = m.group(1), m.group(2)
-        return set_chan(ch, "Full" if lvl == "FULL" else lvl)
+        chans_raw, lvl_raw = m.group(1).strip(), m.group(2)
+        lvl = "Full" if lvl_raw == "FULL" else ("0" if lvl_raw == "OUT" else lvl_raw)
+        chans = chans_raw.split()
+        if len(chans) == 1 and not lvl_raw.startswith(('+', '-')):
+            return set_chan(chans[0], lvl)
+        _push_cmd_history("CHAN {} @ {}".format(chans_raw, lvl_raw))
+        with _cmd_lock:
+            _clear_cmd()
+            _cli("Chan {} At {}".format(chans_raw, lvl))
+        return True
 
     m = re.match(r"CHAN ([\d]+)$", c)
     if m: return set_chan(m.group(1))
@@ -393,10 +412,31 @@ def _push_cmd_history(cmd):
 
 # ─── State / SSE ──────────────────────────────────────────────────────────────
 
+_cmd_line_listeners = []
+
+_chan_levels = {}   # chan_num(int) -> level(int 0-100)
+_chan_levels_listeners = []
+
+def get_chan_levels(): return dict(_chan_levels)
+def on_chan_levels(cb): _chan_levels_listeners.append(cb)
+
+def _notify_chan_levels():
+    snapshot = dict(_chan_levels)
+    for cb in _chan_levels_listeners:
+        try: cb(snapshot)
+        except: pass
+
+def request_chan_snapshot(max_chan=100):
+    """Запросить уровни каналов 1..max_chan через OSC get."""
+    for i in range(1, max_chan + 1):
+        _send("/eos/get/chan/{}".format(i))
+        time.sleep(0.005)
+
 def get_state():    return dict(_state)
 def on_event(cb):   _listeners.append(cb)
 def on_osc_log(cb): _osc_log_listeners.append(cb)
 def get_osc_log():  return list(_osc_log)
+def on_cmd_line(cb): _cmd_line_listeners.append(cb)
 
 def _notify():
     for cb in _listeners:
@@ -482,9 +522,41 @@ def _dispatch(addr, args):
         if key in ("active_cue", "pending_cue") and val:
             _parse_cue_text(val)
         _notify()
+    elif addr == "/eos/out/active/chan":
+        import re as _re2
+        raw = str(args[0]) if args else ""
+        if raw and raw.strip():
+            for token in _re2.split(r'[,\s]+', raw.strip()):
+                token = token.strip()
+                if not token: continue
+                m = _re2.match(r'^(\d+)(?:[@=](\d+))?$', token)
+                if m:
+                    ch = int(m.group(1))
+                    lvl = int(m.group(2)) if m.group(2) else _chan_levels.get(ch, 100)
+                    _chan_levels[ch] = lvl
+        else:
+            pass  # пустая строка — каналы деселектованы, уровни не сбрасываем
+        _notify_chan_levels()
     elif addr == "/eos/out/user/{}/cmd".format(EOS_USER_ID):
-        _state["cmd_line"] = str(args[0]) if args else ""
+        import re as _re3
+        line = str(args[0]) if args else ""
+        _state["cmd_line"] = line
         _notify()
+        for cb in _cmd_line_listeners:
+            try: cb(line)
+            except: pass
+        # Парсим уровни каналов из строки вида "Chan 122 @ 63 #" или "Chan 1 2 3 @ 50"
+        _chan_updated = False
+        m3 = _re3.search(r'Chan\s+([\d\s]+)\s*@\s*(\d+)', line, _re3.IGNORECASE)
+        if m3:
+            lvl = min(100, max(0, int(m3.group(2))))
+            for tok in m3.group(1).split():
+                try:
+                    _chan_levels[int(tok)] = lvl
+                    _chan_updated = True
+                except: pass
+        if _chan_updated:
+            _notify_chan_levels()
     else:
         import re as _re
         ln = str(_active_cue_list_num)
@@ -535,6 +607,24 @@ def _dispatch(addr, args):
                 label = _cue_list.get(num, {}).get("label", "")
                 _state["active_cue"] = f"{lst}/{num} {label}".strip()
                 _notify()
+
+        # Уровни каналов: /eos/out/get/chan/N/list/0/1 — args[0]=uid, args[2]=intensity(0-100)
+        m = _re.match(r"^/eos/out/get/chan/(\d+)/list/\d+/\d+$", addr)
+        if m and len(args) >= 3:
+            try:
+                ch_num = int(m.group(1))
+                lvl_raw = args[2]
+                if lvl_raw not in (None, '', -1, -1.0):
+                    lvl = int(round(float(lvl_raw) * 100)) if float(lvl_raw) <= 1.0 else int(round(float(lvl_raw)))
+                    old = _chan_levels.get(ch_num)
+                    if lvl > 0:
+                        _chan_levels[ch_num] = lvl
+                    elif ch_num in _chan_levels:
+                        del _chan_levels[ch_num]
+                    if old != _chan_levels.get(ch_num):
+                        _notify_chan_levels()
+            except (ValueError, TypeError, IndexError):
+                pass
 
         m = _re.match(r"^/eos/out/fader/{}/(\d+)/name$".format(FADER_BANK), addr)
         if m and args:
@@ -589,7 +679,7 @@ def _connect_tcp():
     """Try to connect to EOS TCP OSC. Returns socket or None."""
     try:
         sock = _socket.socket(_socket.AF_INET, _socket.SOCK_STREAM)
-        sock.settimeout(5)
+        sock.settimeout(2)
         sock.connect((config.EOS_IP, EOS_TCP_PORT))
         sock.settimeout(None)
         print(f"[OSC] TCP connected to {config.EOS_IP}:{EOS_TCP_PORT}")
@@ -640,8 +730,8 @@ def start_tcp_connection():
                     _tcp_sock = None
             _state["eos_ok"] = False
             _notify()
-            print("[OSC] reconnecting in 3s...")
-            time.sleep(3)
+            print("[OSC] reconnecting in 1s...")
+            time.sleep(1)
 
     threading.Thread(target=_loop, daemon=True, name="osc-tcp").start()
     print("[OSC] TCP connection thread started")

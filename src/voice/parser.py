@@ -25,6 +25,7 @@ def _normalize_nums(t):
 
 # Однозначные команды без параметров — проверяются в первую очередь
 SINGLE_PATTERNS = [
+    (r"(sneak|сник|sneik)",                               "SNEAK"),
     (r"go\s*to\s*(kue|cue|куэ|кью)\s*(out|аут|аута)",  "GO TO CUE OUT"),
     (r"(?:перейди|иди|на)\s*(?:кью|cue|kue)?\s*(out|аут|аута|ноль|нуль|нул)", "GO TO CUE OUT"),
     # GO только если НЕТ "to cue N" — иначе перехватит "go to cue 2"

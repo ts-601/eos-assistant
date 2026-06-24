@@ -1,7 +1,7 @@
 import sys, os, json, queue, threading
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 from flask import Flask, Response, request, jsonify, render_template
-from core.osc_bridge import go, stop, run_eos_cmd, get_state, on_event, on_osc_log, get_osc_log, get_cue_list, request_cue_list, on_cue_list, get_cmd_history, on_cmd_history, get_fader_state, on_fader_state, fader_set, fader_bump, fader_stop, fader_page, get_fader_page, get_active_cue_list_num, reconnect
+from core.osc_bridge import go, stop, run_eos_cmd, get_state, on_event, on_osc_log, get_osc_log, get_cue_list, request_cue_list, on_cue_list, get_cmd_history, on_cmd_history, get_fader_state, on_fader_state, fader_set, fader_bump, fader_stop, fader_page, get_fader_page, get_active_cue_list_num, reconnect, on_cmd_line, get_chan_levels, on_chan_levels, request_chan_snapshot
 from voice.parser import parse
 from config import WEB_PORT, ANTHROPIC_API_KEY
 from agent.agent import EOSAgent
@@ -35,6 +35,8 @@ on_event(lambda s: _push({"type": "state", **s}))
 on_cue_list(lambda cues: _push({"type": "cues", "cues": cues}))
 on_cmd_history(lambda e: _push({"type": "cmd_history", "entry": e}))
 on_fader_state(lambda f: _push({"type": "faders", "faders": f, "page": get_fader_page()}))
+on_cmd_line(lambda line: _push({"type": "cmd_stream", "line": line}))
+on_chan_levels(lambda lvls: _push({"type": "chan_levels", "levels": lvls}))
 
 def _push_osc(entry):
     for q in list(_osc_monitor_queues):
@@ -192,6 +194,13 @@ def api_set_port():
     bridge.reconnect()
     return jsonify({"ok": True, "port": port})
 
+@app.route("/api/reconnect", methods=["POST"])
+def api_reconnect():
+    import core.osc_bridge as bridge
+    if not bridge.get_state().get("eos_ok"):
+        bridge.reconnect()
+    return jsonify({"ok": True})
+
 @app.route("/api/cue_list_num")
 def api_cue_list_num():
     return jsonify({"list_num": get_active_cue_list_num()})
@@ -313,6 +322,15 @@ def api_cues():
 @app.route("/api/cues/refresh", methods=["POST"])
 def api_cues_refresh():
     request_cue_list()
+    return jsonify({"ok": True})
+
+@app.route("/api/chans")
+def api_chans():
+    return jsonify(get_chan_levels())
+
+@app.route("/api/chans/refresh", methods=["POST"])
+def api_chans_refresh():
+    threading.Thread(target=request_chan_snapshot, daemon=True).start()
     return jsonify({"ok": True})
 
 @app.route("/api/go",   methods=["POST"])

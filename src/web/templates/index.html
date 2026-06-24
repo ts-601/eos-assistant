@@ -20,18 +20,20 @@
   --safe-b:  env(safe-area-inset-bottom, 0px);
 }
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-html, body { height: 100%; background: var(--bg); color: var(--text); font-family: -apple-system, 'SF Pro Display', Helvetica, Arial, sans-serif; font-size: 15px; overscroll-behavior: none; }
+html { height: 100%; height: -webkit-fill-available; }
+body { height: 100%; height: 100dvh; background: var(--bg); color: var(--text); font-family: -apple-system, 'SF Pro Display', Helvetica, Arial, sans-serif; font-size: 15px; overscroll-behavior: none; }
 
 /* ── TABS ── */
-#tabs { display: flex; background: var(--bg2); border-bottom: 1px solid var(--border); height: var(--tab-h); flex-shrink: 0; }
-.tab { flex: 1; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 11px; color: var(--dim); gap: 4px; flex-direction: column; line-height: 1; border-bottom: 2px solid transparent; transition: color .15s, border-color .15s; }
+#tabs { display: flex; background: var(--bg2); border-bottom: 3px solid var(--red); height: var(--tab-h); flex-shrink: 0; transition: border-color .4s; }
+#tabs.eos-ok { border-bottom-color: var(--green); }
+.tab { flex: 1; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 11px; color: var(--dim); gap: 4px; flex-direction: column; line-height: 1; border-bottom: 2px solid transparent; transition: color .15s, border-color .15s; touch-action: manipulation; user-select: none; -webkit-user-select: none; }
 .tab .ti { font-size: 18px; }
 .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
 
 /* ── PAGES ── */
 body { display: flex; flex-direction: column; }
-#content { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
-.page { display: none; flex-direction: column; height: 100%; }
+#content { flex: 1; overflow: hidden; display: flex; flex-direction: column; min-height: 0; }
+.page { display: none; flex-direction: column; flex: 1; min-height: 0; }
 .page.active { display: flex; }
 
 /* ════════════════════════════════
@@ -66,7 +68,6 @@ body { display: flex; flex-direction: column; }
 }
 .cmd-bar-header { display:flex; align-items:center; justify-content:space-between; gap:8px; }
 .cmd-label { font-size: 10px; color: var(--dim); text-transform: uppercase; letter-spacing: .06em; }
-.cmd-line  { font-family: 'SF Mono', monospace; font-size: 13px; color: var(--yellow); min-height: 18px; margin-top: 2px; }
 .cmd-undo-btn {
   font-size: 13px; font-weight: 700;
   padding: 4px 14px; border-radius: 7px;
@@ -76,19 +77,36 @@ body { display: flex; flex-direction: column; }
 }
 .cmd-undo-btn:active { background: var(--accent); color: #fff; border-color: var(--accent); }
 
-/* История CLI — растягиваемая */
-.cmd-history-wrap {
-  position: relative; margin-top: 3px;
-}
-.cmd-history {
-  height: 44px; min-height: 22px; max-height: 200px;
+/* Поток EOS CLI */
+.cmd-stream-wrap { position: relative; margin-top: 4px; }
+.cmd-stream {
+  height: 120px; min-height: 44px; max-height: 400px;
   overflow-y: auto; display: flex; flex-direction: column-reverse;
   gap: 1px;
 }
+.cmd-stream-resize {
+  height: 6px; cursor: ns-resize; background: transparent;
+  border-top: 2px solid var(--border); margin-top: 2px; border-radius: 2px;
+}
+.cmd-stream-resize:hover { border-color: var(--accent); }
+.cmd-stream-row {
+  display: flex; gap: 8px; font-family: 'SF Mono', monospace; font-size: 11px; line-height: 1.5;
+}
+.cmd-stream-row .cs-time { color: #3a3f52; flex-shrink: 0; }
+.cmd-stream-row .cs-live { color: #a8b2c0; }
+.cmd-stream-row .cs-current { color: var(--yellow); font-weight: 600; }
+.cmd-stream-row .cs-blind { color: #7eb8f7; }
+.cmd-stream-row .cs-error { color: #e05c5c; }
+
+/* Старая история наших команд (CMD history) */
+.cmd-history-wrap { position: relative; margin-top: 4px; }
+.cmd-history {
+  height: 60px; min-height: 22px; max-height: 200px;
+  overflow-y: auto; display: flex; flex-direction: column-reverse; gap: 1px;
+}
 .cmd-history-resize {
   height: 6px; cursor: ns-resize; background: transparent;
-  border-top: 2px solid var(--border); margin-top: 2px;
-  border-radius: 2px;
+  border-top: 2px solid var(--border); margin-top: 2px; border-radius: 2px;
 }
 .cmd-history-resize:hover { border-color: var(--accent); }
 .cmd-history-row {
@@ -200,50 +218,114 @@ body { display: flex; flex-direction: column; }
 /* ════════════════════════════════
    TAB 2  CHANNELS  (like iRFR)
 ════════════════════════════════ */
-#pg-chan { overflow: hidden; }
+#pg-chan { overflow: hidden; background: var(--bg2); }
 
-.chan-grid-wrap { flex: 1; overflow-y: auto; padding: 8px; }
-.chan-grid {
-  display: grid;
-  grid-template-columns: repeat(var(--cols, 6), 1fr);
-  gap: 4px;
+/* ── CHAN STATUS BAR ── */
+.chan-status {
+  background: var(--bg3); border-bottom: 1px solid var(--border);
+  flex-shrink: 0; padding: 5px 12px;
+  display: flex; gap: 12px; align-items: baseline;
 }
-.chan-tile {
-  aspect-ratio: 1;
-  background: var(--bg3);
-  border: 2px solid transparent;
-  border-radius: 7px;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  position: relative; cursor: pointer;
+.cs-lbl { font-size: 9px; color: var(--dim); text-transform: uppercase; letter-spacing: .07em; }
+.cs-val { font-size: 11px; font-family: 'SF Mono', monospace; color: var(--text); margin-left: 3px; }
+.cs-val.act { color: var(--green); }
+
+/* ── АКТИВНЫЕ КАНАЛЫ ── */
+.active-chans-wrap {
+  background: #0d0f14; border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.active-chans-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 4px 12px 2px;
+}
+.ac-toggle { display: flex; gap: 3px; }
+.ac-tab {
+  font-size: 11px; font-weight: 600; padding: 3px 10px;
+  border-radius: 6px; border: 1px solid var(--border);
+  background: transparent; color: var(--dim); cursor: pointer;
+  touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+  user-select: none; -webkit-user-select: none;
+}
+.ac-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.ac-count { font-size: 9px; color: var(--dim); }
+.active-chans-scroll {
+  overflow-x: hidden; overflow-y: auto;
+  display: flex; flex-wrap: wrap; gap: 4px; padding: 4px 10px 8px;
+  scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+  max-height: 140px; min-height: 70px; align-content: flex-start;
+}
+.ac-chip {
+  flex-shrink: 0; background: #141720; border: 1px solid var(--border);
+  border-radius: 8px; width: 50px; display: flex; flex-direction: column;
+  align-items: center; padding: 5px 4px 4px; gap: 3px; cursor: pointer;
   transition: border-color .1s;
-  overflow: hidden;
 }
-.chan-tile.sel { border-color: var(--accent); }
-.chan-tile .ch-num { position: absolute; top: 3px; left: 5px; font-size: 9px; color: var(--dim); font-weight: 600; }
-.chan-tile .ch-lvl { font-size: clamp(14px, 4vw, 22px); font-weight: 700; color: var(--text); }
-.chan-tile .ch-bar { position: absolute; bottom: 0; left: 0; right: 0; height: 4px; background: var(--accent); transform-origin: left; }
-.chan-tile[data-lvl="0"]    { opacity: .45; }
-.chan-tile[data-lvl="full"] { background: #1a3a2a; border-color: var(--green); }
+.ac-chip:active, .ac-chip.sel { border-color: var(--accent); }
+.ac-chip .ac-num { font-size: 9px; font-weight: 700; color: #5a6888; font-family: 'SF Mono', monospace; }
+.ac-chip .ac-lvl { font-size: 14px; font-weight: 700; font-family: 'SF Mono', monospace; color: var(--yellow); }
+.ac-chip .ac-bar { width: 34px; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
+.ac-chip .ac-fill { height: 100%; background: var(--yellow); border-radius: 2px; }
+.ac-chip.full .ac-lvl { color: var(--green); }
+.ac-chip.full .ac-fill { background: var(--green); }
+.ac-chip.dim .ac-lvl  { color: #4a5570; }
+.ac-chip.dim .ac-fill { background: #4a5570; }
+.ac-empty { font-size: 11px; color: var(--dim); display: flex; align-items: center; width: 100%; padding: 0 4px; opacity: .5; }
 
-.chan-bottom {
-  background: var(--bg2); border-top: 1px solid var(--border);
-  flex-shrink: 0; padding: 8px;
+/* ── CMD MINI STREAM ── */
+.chan-cmd-mini {
+  background: #0a0c10; border-bottom: 1px solid var(--border);
+  flex-shrink: 0; height: 26px; overflow: hidden;
+  font-family: 'SF Mono', monospace; font-size: 10px;
+  display: flex; align-items: center; gap: 10px;
+  padding: 0 12px; color: #3a4060;
 }
-.chan-sel-info { font-size: 12px; color: var(--dim); padding: 0 2px 6px; min-height: 20px; }
-.numpad {
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px;
+.chan-cmd-mini .ccm-line { color: #5a6280; white-space: nowrap; }
+.chan-cmd-mini .ccm-line.err { color: var(--red); }
+
+/* ── DISPLAY ── */
+.chan-display {
+  background: #0a0c10; border-bottom: 1px solid var(--border);
+  flex-shrink: 0; padding: 10px 14px; min-height: 62px;
+  display: flex; flex-direction: column; justify-content: center; gap: 3px;
 }
-.nk {
-  height: 42px; border-radius: 8px; border: none; cursor: pointer;
-  font-size: 16px; font-weight: 600; background: var(--bg3); color: var(--text);
-  display: flex; align-items: center; justify-content: center;
+.chan-display-main {
+  font-family: 'SF Mono', monospace; font-size: 28px; font-weight: 700;
+  letter-spacing: .03em; color: var(--yellow); line-height: 1.2;
 }
-.nk:active { filter: brightness(1.3); }
-.nk.fn   { background: #222845; color: var(--accent); font-size: 13px; }
-.nk.go   { background: var(--green); color: #fff; }
-.nk.clr  { background: #2a1818; color: var(--red); }
-.nk.full { background: #1e2e1e; color: var(--green); font-size: 13px; }
+.chan-display-main .d-prefix { color: #3a4060; font-size: 16px; font-weight: 400; }
+.chan-display-main .d-chan   { color: var(--yellow); }
+.chan-display-main .d-thru  { color: #3a4060; font-size: 16px; }
+.chan-display-main .d-at    { color: #3a4060; font-size: 16px; }
+.chan-display-main .d-lvl   { color: var(--green); }
+.chan-display-hint { font-size: 10px; color: #3a4060; }
+
+/* ── KEYPAD ── */
+.chan-keys {
+  flex: 1; display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  grid-template-rows: repeat(5, 1fr) 0.75fr;
+  gap: 3px; padding: 5px; min-height: 0;
+  padding-bottom: calc(5px + env(safe-area-inset-bottom, 0px));
+}
+.ck {
+  border-radius: 10px; border: none; cursor: pointer;
+  font-size: 20px; font-weight: 700; color: #d0d8e8;
+  background: #1a1e2a; display: flex; align-items: center;
+  justify-content: center; min-height: 0; min-width: 0; touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none; user-select: none; -webkit-user-select: none;
+}
+.ck:active { filter: brightness(1.4); transform: scale(.96); }
+.ck.fn    { background: #161c2e; color: var(--accent); font-size: 13px; font-weight: 700; }
+.ck.full  { background: #162a1e; color: var(--green);  font-size: 14px; font-weight: 700; }
+.ck.out   { background: #2a1818; color: var(--red);    font-size: 14px; font-weight: 700; }
+.ck.sneak { background: #1a1630; color: #9b7fe8; font-size: 13px; font-weight: 700; }
+.ck.enter { background: #1a3a28; color: var(--green);  font-size: 16px; font-weight: 700; }
+.ck.clr   { background: #1f1212; color: #a04040; font-size: 13px; font-weight: 600; }
+.ck.pm    { background: #161e30; color: #7ab4f0; font-size: 22px; font-weight: 700; }
+.ck.sa    { background: #1a2535; color: #7ab4f0; font-size: 11px; font-weight: 700; border: 1px solid #2a3a55; }
+.ck.span2 { grid-column: span 2; }
 
 /* ════════════════════════════════
    TAB 3  CUE LIST
@@ -523,7 +605,11 @@ body { display: flex; flex-direction: column; }
       <div class="cmd-label">CMD</div>
       <button class="cmd-undo-btn" onclick="sendUndo()">↩ UNDO</button>
     </div>
-    <div class="cmd-line" id="cmd-line">&nbsp;</div>
+    <div class="cmd-stream-wrap">
+      <div class="cmd-stream" id="cmd-stream"></div>
+      <div class="cmd-stream-resize" id="cmd-stream-resize"></div>
+    </div>
+    <div style="font-size:9px;color:#3a3f52;text-transform:uppercase;letter-spacing:.06em;margin-top:5px;margin-bottom:2px">Отправлено</div>
     <div class="cmd-history-wrap">
       <div class="cmd-history" id="cmd-history"></div>
       <div class="cmd-history-resize" id="cmd-history-resize"></div>
@@ -575,29 +661,58 @@ body { display: flex; flex-direction: column; }
 
 <!-- ═══ CHANNELS ═══ -->
 <div id="pg-chan" class="page">
-  <div class="chan-grid-wrap" id="chan-grid-wrap">
-    <div class="chan-grid" id="chan-grid"></div>
-  </div>
-  <div class="chan-bottom">
-    <div class="chan-sel-info" id="chan-sel-info">Выберите канал</div>
-    <div class="numpad">
-      <button class="nk clr" onclick="chanClear()">CLR</button>
-      <button class="nk" onclick="chanDigit('7')">7</button>
-      <button class="nk" onclick="chanDigit('8')">8</button>
-      <button class="nk" onclick="chanDigit('9')">9</button>
-      <button class="nk full" onclick="chanFull()">FULL</button>
-      <button class="nk" onclick="chanDigit('4')">4</button>
-      <button class="nk" onclick="chanDigit('5')">5</button>
-      <button class="nk" onclick="chanDigit('6')">6</button>
-      <button class="nk fn" onclick="chanAt()">@ AT</button>
-      <button class="nk" onclick="chanDigit('1')">1</button>
-      <button class="nk" onclick="chanDigit('2')">2</button>
-      <button class="nk" onclick="chanDigit('3')">3</button>
-      <button class="nk clr" onclick="chanOut()">OUT</button>
-      <button class="nk" onclick="chanDigit('0')">0</button>
-      <button class="nk" onclick="chanDigit('.')">.</button>
-      <button class="nk go" onclick="chanEnter()">ENTER</button>
+  <div class="active-chans-wrap">
+    <div class="active-chans-header">
+      <div class="ac-toggle">
+        <button class="ac-tab active" id="ac-tab-manual" onclick="switchChanView('manual')">Мануальные</button>
+        <button class="ac-tab" id="ac-tab-live" onclick="switchChanView('live')">Активные</button>
+      </div>
+      <span class="ac-count" id="ac-count">—</span>
     </div>
+    <div class="active-chans-scroll" id="ac-scroll">
+      <span class="ac-empty">нет данных</span>
+    </div>
+  </div>
+
+  <div class="chan-cmd-mini" id="chan-cmd-mini">
+    <span class="ccm-line" style="color:#3a4060">EOS CMD</span>
+  </div>
+
+  <div class="chan-display">
+    <div class="chan-display-main" id="chan-disp">
+      <span class="d-prefix">CHAN </span><span class="d-chan" id="chan-disp-val" style="color:#3a4060">_</span>
+    </div>
+    <div class="chan-display-hint" id="chan-hint">введи номер канала</div>
+  </div>
+
+  <div class="chan-keys">
+    <button class="ck pm" onclick="chanPlus()">+</button>
+    <button class="ck fn" onclick="chanThru()">THRU</button>
+    <button class="ck pm" onclick="chanMinus()">−</button>
+    <button class="ck sa" onclick="chanSelectActive()">SEL ACTIVE</button>
+
+    <button class="ck" onclick="chanD('7')">7</button>
+    <button class="ck" onclick="chanD('8')">8</button>
+    <button class="ck" onclick="chanD('9')">9</button>
+    <button class="ck sneak" onclick="chanSneak()">SNEAK</button>
+
+    <button class="ck" onclick="chanD('4')">4</button>
+    <button class="ck" onclick="chanD('5')">5</button>
+    <button class="ck" onclick="chanD('6')">6</button>
+    <button class="ck full" onclick="chanFull()">FULL</button>
+
+    <button class="ck" onclick="chanD('1')">1</button>
+    <button class="ck" onclick="chanD('2')">2</button>
+    <button class="ck" onclick="chanD('3')">3</button>
+    <button class="ck out" onclick="chanOut()">OUT</button>
+
+    <button class="ck fn" onclick="chanLast()">←</button>
+    <button class="ck" onclick="chanD('0')">0</button>
+    <button class="ck" onclick="chanDot()">.</button>
+    <button class="ck fn" onclick="chanAt()">@ AT</button>
+
+    <button class="ck clr span2" onclick="chanClear()">CLEAR</button>
+    <button class="ck enter span2" onclick="chanEnter()">ENTER</button>
   </div>
 </div>
 
@@ -703,31 +818,53 @@ body { display: flex; flex-direction: column; }
 </div>
 
 <!-- ═══ SETTINGS ═══ -->
-<div id="pg-settings" class="page">
-  <div class="sgroup">
-    <div class="sgroup-title">Подключение EOS</div>
-    <div class="srow">
-      <label>IP адрес</label>
-      <input id="cfg-ip" type="text" inputmode="decimal">
-      <button class="save-btn" onclick="saveIp()">Сохр.</button>
+<div id="pg-settings" class="page" style="padding:20px 16px;gap:16px;overflow-y:auto">
+
+  <!-- Статус подключения -->
+  <div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:12px">
+    <div id="cfg-dot" style="width:12px;height:12px;border-radius:50%;background:var(--red);flex-shrink:0"></div>
+    <div>
+      <div id="cfg-status-label" style="font-size:14px;font-weight:600;color:var(--text)">Нет соединения</div>
+      <div id="cfg-status-sub" style="font-size:11px;color:var(--dim);margin-top:1px">—</div>
     </div>
-    <div class="srow">
-      <label>Порт TX (EOS слушает)</label>
-      <input id="cfg-port" type="text" inputmode="numeric">
-      <button class="save-btn" onclick="savePort()">Сохр.</button>
-    </div>
-    <div class="srow">
-      <label>Порт RX (мы слушаем)</label>
-      <input id="cfg-rx-port" type="text" inputmode="numeric">
-      <button class="save-btn" onclick="saveRxPort()">Сохр.</button>
-    </div>
+    <button onclick="connectEos()" style="margin-left:auto;padding:8px 18px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-size:14px;font-weight:600;cursor:pointer" id="cfg-connect-btn">Подключить</button>
   </div>
-  <div class="sgroup" style="margin-top:16px">
-    <div class="srow">
-      <label>Статус</label>
-      <span id="cfg-status" style="color:var(--dim);font-size:14px">—</span>
+
+  <!-- IP и порты пульта -->
+  <div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:12px">
+    <div>
+      <div style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px">Название пульта</div>
+      <input id="cfg-name" type="text" placeholder="Например: Главный зал"
+        style="width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:16px;padding:9px 12px"
+        onkeydown="if(event.key==='Enter') connectEos()">
     </div>
+    <div>
+      <div style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px">IP пульта EOS</div>
+      <input id="cfg-ip" type="text" inputmode="decimal" placeholder="192.168.1.x"
+        style="width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:18px;font-family:'SF Mono',monospace;padding:10px 12px;font-weight:600"
+        onkeydown="if(event.key==='Enter') connectEos()">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div>
+        <div style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px">OSC порт TX</div>
+        <input id="cfg-port" type="text" inputmode="numeric" placeholder="8000"
+          style="width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:15px;font-family:'SF Mono',monospace;padding:8px 10px">
+      </div>
+      <div>
+        <div style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px">OSC порт RX</div>
+        <input id="cfg-rx-port" type="text" inputmode="numeric" placeholder="8001"
+          style="width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:15px;font-family:'SF Mono',monospace;padding:8px 10px">
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--dim)">TCP (EOS слушает команды) — порт 3032, фиксирован</div>
   </div>
+
+  <!-- Последние пульты -->
+  <div id="cfg-recent-wrap" style="display:none;background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:12px 16px">
+    <div style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">Недавние</div>
+    <div id="cfg-recent-list" style="display:flex;flex-direction:column;gap:6px"></div>
+  </div>
+
 </div>
 
 </div><!-- #content -->
@@ -745,9 +882,19 @@ function showPage(id, el) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.getElementById('pg-' + id).classList.add('active');
   el.classList.add('active');
+  localStorage.setItem('eos_tab', id);
   if (id === 'cues') renderCues();
-  if (id === 'chan') renderChanGrid();
+  if (id === 'chan') { _chanRender(); _refreshChanLevels(); }
 }
+
+// Восстановить вкладку после перезагрузки
+(function() {
+  const saved = localStorage.getItem('eos_tab');
+  if (saved && saved !== 'live') {
+    const tab = document.querySelector('.tab[onclick*="\'' + saved + '\'"]');
+    if (tab) showPage(saved, tab);
+  }
+})();
 
 /* ══════════ SSE ══════════ */
 const es = new EventSource('/api/events');
@@ -763,6 +910,10 @@ es.onmessage = e => {
       faderPageNum = d.page;
       document.getElementById('fader-page-label').textContent = 'Страница ' + faderPageNum;
     }
+  } else if (d.type === 'cmd_stream') {
+    appendCmdStream(d.line);
+  } else if (d.type === 'chan_levels') {
+    renderActiveChanChips(d.levels);
   } else if (d.type === 'cmd_history') {
     appendCmdHistory(d.entry);
   } else if (d.type === 'cmd_history_init') {
@@ -781,6 +932,35 @@ es.onmessage = e => {
   }
 };
 
+function appendCmdStream(line) {
+  const s = document.getElementById('cmd-stream');
+  if (!s) return;
+  const now = new Date();
+  const ts = now.getHours().toString().padStart(2,'0') + ':' +
+             now.getMinutes().toString().padStart(2,'0') + ':' +
+             now.getSeconds().toString().padStart(2,'0');
+  const row = document.createElement('div');
+  row.className = 'cmd-stream-row';
+  const upper = (line || '').toUpperCase();
+  let cls = 'cs-live';
+  if (!line || line.trim() === '') cls = 'cs-live';
+  else if (upper.includes('ERROR') || upper.includes('ОШИБКА') || upper.includes('FAIL')) cls = 'cs-error';
+  else if (upper.includes('BLIND')) cls = 'cs-blind';
+  else if (upper === state.cmd_line) cls = 'cs-current';
+  row.innerHTML = '<span class="cs-time">' + ts + '</span><span class="' + cls + '">' + (line || '&nbsp;') + '</span>';
+  s.prepend(row);
+  while (s.children.length > 200) s.removeChild(s.lastChild);
+  // мини-стрип в вкладке каналов — одна строка
+  const mini = document.getElementById('chan-cmd-mini');
+  if (mini && line && line.trim()) {
+    const span = document.createElement('span');
+    span.className = 'ccm-line' + (cls === 'cs-error' ? ' err' : '');
+    span.textContent = line;
+    mini.innerHTML = '';
+    mini.appendChild(span);
+  }
+}
+
 function appendCmdHistory(entry) {
   const h = document.getElementById('cmd-history');
   if (!h) return;
@@ -795,24 +975,32 @@ es.onerror   = () => { state.eos_ok = false; updateLive(); };
 
 function updateLive() {
   const ok = state.eos_ok;
+  document.getElementById('tabs').classList.toggle('eos-ok', ok);
   document.getElementById('dot').className = 'dot' + (ok ? ' ok' : '');
   const statusEl = document.getElementById('conn-status');
   statusEl.textContent = ok ? 'подключено' : 'нет соединения';
   statusEl.style.color = ok ? 'var(--green)' : 'var(--red)';
 
   document.getElementById('show-name').textContent = state.show_name || '—';
-  document.getElementById('cmd-line').textContent  = state.cmd_line  || ' ';
   document.getElementById('active-cue').textContent  = state.active_cue  || '—';
   document.getElementById('pending-cue').textContent = state.pending_cue || '—';
+  const ca = document.getElementById('chan-active-cue');  if (ca) ca.textContent = state.active_cue  || '—';
+  const cp = document.getElementById('chan-pending-cue'); if (cp) cp.textContent = state.pending_cue || '—';
 
   // Шоу-вкладка
   document.getElementById('si-name').textContent    = state.show_name || '—';
   document.getElementById('si-active').textContent  = state.active_cue  || '—';
   document.getElementById('si-pending').textContent = state.pending_cue || '—';
 
-  const cfgSt = document.getElementById('cfg-status');
-  cfgSt.textContent = ok ? '✓ EOS отвечает' : '✗ нет ответа от EOS';
-  cfgSt.style.color = ok ? 'var(--green)' : 'var(--red)';
+  (function(){
+    let _sub = '';
+    if (ok && eosIp) {
+      const _rl = JSON.parse(localStorage.getItem('eos_recent_ips') || '[]');
+      const _rm = _rl.find(r => (typeof r === 'object' ? r.ip : r) === eosIp);
+      _sub = (_rm && _rm.name) ? _rm.name + ' (' + eosIp + ')' : eosIp;
+    }
+    _cfgSetStatus(ok, _sub);
+  })();
 
   activeCueNum  = parseCueNum(state.active_cue);
   pendingCueNum = parseCueNum(state.pending_cue);
@@ -826,23 +1014,181 @@ function parseCueNum(text) {
   return m ? m[1] : '';
 }
 
-/* ══════════ GET IP/PORT ══════════ */
+/* ══════════ SETTINGS / CONNECTION ══════════ */
+function _cfgSetStatus(ok, sub) {
+  const dot = document.getElementById('cfg-dot');
+  const lbl = document.getElementById('cfg-status-label');
+  const s   = document.getElementById('cfg-status-sub');
+  if (dot) dot.style.background = ok ? 'var(--green)' : 'var(--red)';
+  if (lbl) lbl.textContent = ok ? 'Подключено' : 'Нет соединения';
+  if (s)   s.textContent   = sub || '';
+}
+
+function _cfgAutoIp() { return localStorage.getItem('eos_auto_ip') || ''; }
+
+function _cfgRecentLoad() {
+  const list = JSON.parse(localStorage.getItem('eos_recent_ips') || '[]');
+  const wrap = document.getElementById('cfg-recent-wrap');
+  const cont = document.getElementById('cfg-recent-list');
+  if (!cont || !list.length) { if (wrap) wrap.style.display = 'none'; return; }
+  wrap.style.display = '';
+  cont.innerHTML = '';
+  const autoIp = _cfgAutoIp();
+  list.slice(0,5).forEach(entry => {
+    const e = typeof entry === 'object' ? entry : {ip: entry, name:'', port:'', rxPort:''};
+    const isAuto = e.ip === autoIp;
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)';
+    row.innerHTML =
+      '<div style="flex:1;min-width:0">' +
+        (e.name ? '<div style="font-size:14px;font-weight:600;color:var(--text)">' + e.name + '</div>' : '') +
+        '<div style="font-family:\'SF Mono\',monospace;font-size:12px;color:var(--dim)">' + e.ip + (e.port ? ' : ' + e.port : '') + '</div>' +
+      '</div>' +
+      '<label style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--dim);cursor:pointer;flex-shrink:0">' +
+        '<input type="checkbox" data-autoip="' + e.ip + '"' + (isAuto ? ' checked' : '') + ' style="cursor:pointer">' +
+        'Авто' +
+      '</label>' +
+      '<button style="font-size:13px;padding:5px 14px;border-radius:7px;border:none;background:var(--accent);color:#fff;font-weight:600;cursor:pointer;flex-shrink:0">→</button>';
+    row.querySelector('input[type=checkbox]').addEventListener('change', function() {
+      localStorage.setItem('eos_auto_ip', this.checked ? e.ip : '');
+      _cfgRecentLoad();
+    });
+    row.querySelector('button').addEventListener('click', () => {
+      document.getElementById('cfg-ip').value = e.ip;
+      if (e.name) document.getElementById('cfg-name').value = e.name;
+      if (e.port) document.getElementById('cfg-port').value = e.port;
+      if (e.rxPort) document.getElementById('cfg-rx-port').value = e.rxPort;
+      connectEos();
+    });
+    cont.appendChild(row);
+  });
+}
+
+function _cfgRecentSave(entry) {
+  let list = JSON.parse(localStorage.getItem('eos_recent_ips') || '[]');
+  // normalize old string entries
+  list = list.map(x => typeof x === 'object' ? x : {ip:x, name:'', port:'', rxPort:''});
+  list = [entry, ...list.filter(x => x.ip !== entry.ip)].slice(0, 5);
+  localStorage.setItem('eos_recent_ips', JSON.stringify(list));
+  _cfgRecentLoad();
+}
+
+async function connectEos() {
+  const ip     = document.getElementById('cfg-ip').value.trim();
+  const name   = document.getElementById('cfg-name').value.trim();
+  const port   = parseInt(document.getElementById('cfg-port').value.trim()) || null;
+  const rxPort = parseInt(document.getElementById('cfg-rx-port').value.trim()) || null;
+  if (!ip) return;
+  const btn = document.getElementById('cfg-connect-btn');
+  if (btn) { btn.textContent = '...'; btn.disabled = true; }
+  try {
+    await fetch('/api/set_ip', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ip})});
+    if (port)   await fetch('/api/set_port',    {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({port})});
+    if (rxPort) await fetch('/api/set_rx_port', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({port: rxPort})});
+    _cfgRecentSave({name, ip, port: port||'', rxPort: rxPort||''});
+    eosIp = ip;
+    document.getElementById('conn-ip').textContent = ip;
+    const label = name ? name + ' (' + ip + ')' : ip;
+    _cfgSetStatus(false, 'Подключаюсь к ' + label + '…');
+    setTimeout(() => { if (state.eos_ok) _cfgSetStatus(true, label); }, 3000);
+  } finally {
+    if (btn) { btn.textContent = 'Подключить'; btn.disabled = false; }
+  }
+}
+
+// Загрузить настройки и auto-connect при старте
 fetch('/api/get_ip').then(r => r.json()).then(d => {
   eosIp = d.ip; eosPort = d.port;
-  document.getElementById('conn-ip').textContent   = eosIp;
-  document.getElementById('conn-port').textContent = eosPort;
-  document.getElementById('cfg-ip').value    = eosIp;
-  document.getElementById('cfg-port').value  = eosPort;
-  document.getElementById('cfg-rx-port').value = d.rx_port || '';
+  document.getElementById('conn-ip').textContent   = eosIp || '—';
+  document.getElementById('conn-port').textContent = eosPort || '—';
+  if (d.ip)   document.getElementById('cfg-ip').value   = d.ip;
+  if (d.port) document.getElementById('cfg-port').value = d.port;
+  if (d.rx_port) document.getElementById('cfg-rx-port').value = d.rx_port;
+  _cfgRecentLoad();
+  // Подставить имя из последнего недавнего пульта с совпадающим IP
+  const _rec = JSON.parse(localStorage.getItem('eos_recent_ips') || '[]');
+  const _match = _rec.find(r => (typeof r === 'object' ? r.ip : r) === d.ip);
+  if (_match && typeof _match === 'object' && _match.name)
+    document.getElementById('cfg-name').value = _match.name;
+  // Авто-подключение при старте
+  const _autoIp = _cfgAutoIp();
+  const _autoEntry = (JSON.parse(localStorage.getItem('eos_recent_ips') || '[]'))
+    .map(x => typeof x === 'object' ? x : {ip:x})
+    .find(x => x.ip === _autoIp);
+
+  if (_autoEntry) {
+    // Есть выбранный авто-пульт — подключаемся к нему сразу
+    _cfgSetStatus(false, 'Подключаюсь к ' + (_autoEntry.name || _autoEntry.ip) + '…');
+    fetch('/api/state').then(r => r.json()).then(s => {
+      if (s.eos_ok && d.ip === _autoIp) {
+        // Уже подключены к нужному пульту
+        state.eos_ok = true; updateLive();
+      } else {
+        // Переключаемся на авто-пульт
+        const _doConnect = async () => {
+          await fetch('/api/set_ip', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ip: _autoEntry.ip})});
+          if (_autoEntry.port) await fetch('/api/set_port', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({port: _autoEntry.port})});
+          await fetch('/api/reconnect', {method:'POST'});
+          _pollConnected(_autoEntry);
+        };
+        _doConnect().catch(() => {});
+      }
+    }).catch(() => {
+      fetch('/api/reconnect', {method:'POST'}).catch(() => {});
+    });
+  } else if (d.ip) {
+    // Нет авто-пульта, но IP сохранён — подключаемся если нужно
+    fetch('/api/state').then(r => r.json()).then(s => {
+      if (s.eos_ok) { state.eos_ok = true; updateLive(); }
+      else fetch('/api/reconnect', {method:'POST'}).catch(() => {});
+    }).catch(() => fetch('/api/reconnect', {method:'POST'}).catch(() => {}));
+  }
 });
+
+function _pollConnected(entry, attempt) {
+  attempt = attempt || 0;
+  if (attempt > 10) return;
+  setTimeout(() => {
+    fetch('/api/state').then(r => r.json()).then(s => {
+      if (s.eos_ok) {
+        state.eos_ok = true;
+        eosIp = entry.ip;
+        document.getElementById('conn-ip').textContent = entry.ip;
+        updateLive();
+      } else {
+        _pollConnected(entry, attempt + 1);
+      }
+    }).catch(() => {});
+  }, 400);
+}
 
 /* ══════════ COMMANDS ══════════ */
 async function cmd(c) {
+  _parseChanCmd(c);
   return fetch('/api/cmd', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({cmd: c})
   }).then(r => r.json());
+}
+
+function _parseChanCmd(c) {
+  if (!c) return;
+  const u = c.toUpperCase().trim();
+  const m = u.match(/^CHAN\s+([\d\s,]+(?:THRU\s*[\d\s]+)?)\s*@\s*(FULL|OUT|\d+)$/);
+  if (!m) return;
+  const chanPart = m[1].trim();
+  const lvlStr = m[2];
+  const lvl = lvlStr === 'FULL' ? 100 : lvlStr === 'OUT' ? 0 : parseInt(lvlStr);
+  let chans = [];
+  const thruM = chanPart.match(/^(\d+)\s+THRU\s+(\d+)$/);
+  if (thruM) {
+    const a = parseInt(thruM[1]), b = parseInt(thruM[2]);
+    for (let i = Math.min(a,b); i <= Math.max(a,b); i++) chans.push(i);
+  } else {
+    chanPart.split(/[\s,]+/).forEach(t => { const n = parseInt(t); if (!isNaN(n)) chans.push(n); });
+  }
+  _trackManual(chans, lvl);
 }
 
 function sendUndo() {
@@ -1361,101 +1707,217 @@ document.getElementById('cues-toolbar').addEventListener('click', e => {
   });
 })();
 
-/* ══════════ CHANNELS (iRFR style) ══════════ */
-const CHAN_COUNT = 72;
-let chanLevels  = {};
-let chanSelected = new Set();
-let chanEntry = '';
-let chanMode  = 'chan';
+/* ══════════ CHANNELS ══════════ */
+let _chanSel = [];      // выбранные каналы (массив чисел)
+let _chanEntry = '';    // набираемые цифры
+let _chanMode = 'chan'; // 'chan' | 'at'
+let _chanThruFrom = null; // начало THRU
+let _chanLevels = {};   // num -> level (из SSE)
 
-function renderChanGrid() {
-  const wrap = document.getElementById('chan-grid-wrap');
-  const cols = Math.max(5, Math.min(10, Math.floor(wrap.clientWidth / 54)));
-  const grid = document.getElementById('chan-grid');
-  grid.style.setProperty('--cols', cols);
-
-  if (grid.children.length === CHAN_COUNT) {
-    for (let i = 1; i <= CHAN_COUNT; i++) {
-      const tile = document.getElementById('ch-' + i);
-      if (!tile) continue;
-      const lvl = chanLevels[i] ?? 0;
-      tile.querySelector('.ch-lvl').textContent = lvl > 0 ? lvl + '%' : '—';
-      tile.querySelector('.ch-bar').style.width = lvl + '%';
-      tile.dataset.lvl = lvl === 0 ? '0' : lvl === 100 ? 'full' : '';
-      tile.classList.toggle('sel', chanSelected.has(i));
+function _chanCommit() {
+  // зафиксировать набранный номер(а) в _chanSel
+  if (_chanThruFrom !== null && _chanEntry) {
+    const a = parseInt(_chanThruFrom), b = parseInt(_chanEntry);
+    for (let i = Math.min(a,b); i <= Math.max(a,b); i++) {
+      if (!_chanSel.includes(i)) _chanSel.push(i);
     }
-    return;
-  }
-
-  grid.innerHTML = '';
-  for (let i = 1; i <= CHAN_COUNT; i++) {
-    const tile = document.createElement('div');
-    tile.className = 'chan-tile';
-    tile.id = 'ch-' + i;
-    tile.dataset.lvl = '0';
-    tile.innerHTML =
-      '<span class="ch-num">' + i + '</span>' +
-      '<span class="ch-lvl">—</span>' +
-      '<div class="ch-bar" style="width:0%"></div>';
-    tile.addEventListener('click', () => toggleChan(i));
-    grid.appendChild(tile);
+    _chanThruFrom = null; _chanEntry = '';
+  } else if (_chanEntry) {
+    const n = parseInt(_chanEntry);
+    if (!_chanSel.includes(n)) _chanSel.push(n);
+    _chanEntry = '';
   }
 }
 
-function toggleChan(i) {
-  if (chanSelected.has(i)) chanSelected.delete(i);
-  else chanSelected.add(i);
-  updateChanInfo();
-  renderChanGrid();
+function _chanRender() {
+  const disp = document.getElementById('chan-disp');
+  const hint = document.getElementById('chan-hint');
+  if (!disp) return;
+  let html = '', hintText = '';
+  if (_chanMode === 'chan') {
+    let chanPart = '';
+    if (_chanSel.length) chanPart = '<span class="d-chan">' + _chanSel.join(', ') + '</span>';
+    if (_chanThruFrom !== null) {
+      chanPart = '<span class="d-chan">' + _chanThruFrom + '</span><span class="d-thru"> THRU </span>';
+      chanPart += _chanEntry ? '<span class="d-chan">' + _chanEntry + '</span>' : '<span style="color:#3a4060">_</span>';
+      hintText = 'введи конечный канал → ENTER';
+    } else if (_chanEntry) {
+      chanPart += (_chanSel.length ? ', ' : '') + '<span class="d-chan">' + _chanEntry + '</span>';
+      hintText = 'ENTER — выбрать, FULL / OUT — сразу применить';
+    } else if (_chanSel.length) {
+      hintText = '@ AT, FULL, OUT, SNEAK — или добавь ещё каналов';
+    } else {
+      chanPart = '<span style="color:#3a4060">_</span>';
+      hintText = 'введи номер канала';
+    }
+    html = '<span class="d-prefix">CHAN </span>' + chanPart;
+  } else {
+    const chStr = _chanSel.join(', ');
+    const lvlStr = _chanEntry || '<span style="color:#3a4060">_</span>';
+    html = '<span class="d-chan">' + chStr + '</span><span class="d-at"> @ </span><span class="d-lvl">' + lvlStr + '</span>';
+    hintText = 'введи уровень 0–100 → ENTER';
+  }
+  disp.innerHTML = html;
+  if (hint) hint.textContent = hintText;
 }
 
-function updateChanInfo() {
-  const sel = [...chanSelected].sort((a, b) => a - b);
-  document.getElementById('chan-sel-info').textContent =
-    sel.length ? 'Каналы: ' + sel.join(', ') + (chanEntry ? '  →  ' + chanEntry : '') : 'Выберите канал';
+function chanD(d) { _chanEntry += d; _chanRender(); }
+
+function chanPlus() {
+  if (_chanMode === 'chan') _chanCommit();
+  if (!_chanSel.length) return;
+  _chanMode = 'at'; _chanEntry = '+'; _chanRender();
 }
-
-function chanDigit(d) { chanEntry += d; updateChanInfo(); }
-
-function chanClear() {
-  chanEntry = ''; chanMode = 'chan'; chanSelected.clear();
-  updateChanInfo(); renderChanGrid();
-}
-
-function chanAt() {
-  if (!chanSelected.size) return;
-  chanMode = 'at'; chanEntry = ''; updateChanInfo();
-}
-
-function chanFull() {
-  if (!chanSelected.size) return;
-  chanSelected.forEach(c => { cmd('CHAN ' + c + ' @ FULL'); chanLevels[c] = 100; });
-  renderChanGrid();
-}
-
-function chanOut() {
-  if (!chanSelected.size) return;
-  chanSelected.forEach(c => { cmd('CHAN ' + c + ' @ 0'); chanLevels[c] = 0; });
-  renderChanGrid();
+function chanMinus() {
+  if (_chanMode === 'chan') _chanCommit();
+  if (!_chanSel.length) return;
+  _chanMode = 'at'; _chanEntry = '-'; _chanRender();
 }
 
 function chanEnter() {
-  if (!chanSelected.size && chanMode === 'chan' && chanEntry) {
-    chanSelected.add(parseInt(chanEntry));
-    chanEntry = ''; updateChanInfo(); renderChanGrid(); return;
+  if (_chanMode === 'chan') {
+    _chanCommit();
+    _chanRender();
+  } else if (_chanMode === 'at' && _chanEntry) {
+    const isRelative = _chanEntry.startsWith('+') || _chanEntry.startsWith('-');
+    const chanStr = _chanSel.join(' ');
+    if (isRelative) {
+      const digits = _chanEntry.slice(1);
+      if (!digits) return;
+      const bump = parseInt(digits);
+      cmd('CHAN ' + chanStr + ' @ ' + _chanEntry.charAt(0) + bump);
+    } else {
+      // EOS rule: single digit without leading zero = tens (3 → 30%, 03 → 3%)
+      const raw = parseInt(_chanEntry);
+      const lvl = (_chanEntry.length === 1) ? raw * 10 : Math.min(raw, 100);
+      cmd('CHAN ' + chanStr + ' @ ' + lvl);
+      _trackManual([..._chanSel], lvl);
+    }
+    chanClear();
   }
-  if (chanMode === 'at' && chanEntry) {
-    const lvl = parseInt(chanEntry);
-    chanSelected.forEach(c => { cmd('CHAN ' + c + ' @ ' + lvl); chanLevels[c] = Math.min(100, Math.max(0, lvl)); });
-  }
-  chanEntry = ''; chanMode = 'chan';
-  updateChanInfo(); renderChanGrid();
 }
 
-renderChanGrid();
-window.addEventListener('resize', () => {
-  if (document.getElementById('pg-chan').classList.contains('active')) renderChanGrid();
-});
+function chanAt() {
+  if (_chanMode === 'chan') _chanCommit();
+  if (!_chanSel.length) return;
+  _chanMode = 'at'; _chanEntry = ''; _chanRender();
+}
+
+function chanThru() {
+  if (_chanThruFrom !== null) return;
+  if (_chanEntry) { _chanThruFrom = _chanEntry; _chanEntry = ''; }
+  else if (_chanSel.length === 1) { _chanThruFrom = _chanSel[0]; _chanSel = []; }
+  _chanRender();
+}
+
+function chanFull() {
+  if (_chanMode === 'chan') _chanCommit();
+  if (!_chanSel.length) return;
+  cmd('CHAN ' + _chanSel.join(' ') + ' @ FULL');
+  _trackManual([..._chanSel], 100);
+  chanClear();
+}
+
+function chanOut() {
+  if (_chanMode === 'chan') _chanCommit();
+  if (!_chanSel.length) return;
+  cmd('CHAN ' + _chanSel.join(' ') + ' @ 0');
+  _trackManual([..._chanSel], 0);
+  chanClear();
+}
+
+function chanDot() { _chanEntry += '.'; _chanRender(); }
+function chanSelectActive() { cmd('SELECT ACTIVE'); chanClear(); }
+function chanSneak() { cmd('SNEAK'); chanClear(); }
+function chanLast()  { cmd('LAST'); }
+function chanNext()  { cmd('NEXT'); }
+
+function chanClear() {
+  _chanSel = []; _chanEntry = ''; _chanMode = 'chan'; _chanThruFrom = null;
+  _chanRender();
+}
+
+let _chanView = 'manual';    // 'live' | 'manual'
+let _manualLevels = {};      // num -> level, то что мы сами отправили
+
+function switchChanView(v) {
+  _chanView = v;
+  document.getElementById('ac-tab-live').classList.toggle('active', v === 'live');
+  document.getElementById('ac-tab-manual').classList.toggle('active', v === 'manual');
+  _renderChanChips();
+}
+
+function _renderChanChips() {
+  const sc = document.getElementById('ac-scroll');
+  const cnt = document.getElementById('ac-count');
+  if (!sc) return;
+  const source = _chanView === 'live' ? _chanLevels : _manualLevels;
+  const entries = Object.entries(source)
+    .map(([n, l]) => ({n: parseInt(n), l: parseInt(l)}))
+    .filter(x => x.l > 0)
+    .sort((a, b) => a.n - b.n);
+  if (cnt) cnt.textContent = entries.length ? entries.length + ' кан.' : '—';
+  if (!entries.length) {
+    sc.innerHTML = '<span class="ac-empty">' + (_chanView === 'live' ? 'нет активных каналов' : 'нет мануальных') + '</span>';
+    return;
+  }
+  sc.innerHTML = '';
+  entries.forEach(({n, l}) => {
+    const chip = document.createElement('div');
+    chip.className = 'ac-chip' + (l === 100 ? ' full' : l < 20 ? ' dim' : '');
+    chip.innerHTML =
+      '<div class="ac-num">' + n + '</div>' +
+      '<div class="ac-lvl">' + l + '%</div>' +
+      '<div class="ac-bar"><div class="ac-fill" style="width:' + l + '%"></div></div>';
+    chip.addEventListener('click', () => {
+      if (!_chanSel.includes(n)) _chanSel.push(n);
+      _chanMode = 'chan'; _chanEntry = ''; _chanThruFrom = null;
+      _chanRender();
+    });
+    sc.appendChild(chip);
+  });
+}
+
+function renderActiveChanChips(levels) {
+  _chanLevels = levels || {};
+  if (_chanView === 'live') _renderChanChips();
+}
+
+function _trackManual(chans, level) {
+  chans.forEach(c => {
+    if (level === 0) delete _manualLevels[c];
+    else _manualLevels[c] = level;
+  });
+  if (_chanView === 'manual') _renderChanChips();
+}
+
+// Запрос уровней при открытии вкладки каналов
+function _refreshChanLevels() {
+  fetch('/api/chans').then(r => r.json()).then(renderActiveChanChips).catch(() => {});
+  fetch('/api/chans/refresh', {method:'POST'}).catch(() => {});
+}
+
+_chanRender();
+_renderChanChips();
+
+// iOS: touchend как fallback для onclick на кнопках клавиатуры
+(function() {
+  let _tStartX = 0, _tStartY = 0;
+  const pg = document.getElementById('pg-chan');
+  pg.addEventListener('touchstart', function(e) {
+    _tStartX = e.touches[0].clientX;
+    _tStartY = e.touches[0].clientY;
+  }, { passive: true });
+  pg.addEventListener('touchend', function(e) {
+    const dx = Math.abs(e.changedTouches[0].clientX - _tStartX);
+    const dy = Math.abs(e.changedTouches[0].clientY - _tStartY);
+    if (dx > 10 || dy > 10) return; // это скролл, не тап
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    e.preventDefault();
+    btn.click();
+  }, { passive: false });
+})();
 
 /* ══════════ FADERS ══════════ */
 const FADER_COUNT = 10;
@@ -1560,6 +2022,23 @@ function subPage(delta) {
 }
 
 buildFaders();
+
+/* ══════════ RESIZE CMD STREAM ══════════ */
+(function() {
+  const resizer = document.getElementById('cmd-stream-resize');
+  const el      = document.getElementById('cmd-stream');
+  if (!resizer || !el) return;
+  let startY = 0, startH = 0, dragging = false;
+  resizer.addEventListener('pointerdown', e => {
+    dragging = true; startY = e.clientY; startH = el.offsetHeight;
+    resizer.setPointerCapture(e.pointerId); e.preventDefault();
+  });
+  resizer.addEventListener('pointermove', e => {
+    if (!dragging) return;
+    el.style.height = Math.max(44, Math.min(400, startH + (e.clientY - startY))) + 'px';
+  });
+  resizer.addEventListener('pointerup', () => { dragging = false; });
+})();
 
 /* ══════════ RESIZE CMD HISTORY ══════════ */
 (function() {
