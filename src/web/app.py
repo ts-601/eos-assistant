@@ -3,19 +3,17 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 from flask import Flask, Response, request, jsonify, render_template
 from core.osc_bridge import go, stop, run_eos_cmd, get_state, on_event, on_osc_log, get_osc_log, get_cue_list, request_cue_list, on_cue_list, get_cmd_history, on_cmd_history, get_fader_state, on_fader_state, fader_set, fader_bump, fader_stop, fader_page, get_fader_page, get_active_cue_list_num, reconnect, on_cmd_line, get_chan_levels, on_chan_levels, request_chan_snapshot
 from voice.parser import parse
-from config import WEB_PORT, ANTHROPIC_API_KEY
-from agent.agent import EOSAgent
+from config import WEB_PORT
+from agent.local_agent import LocalAgent
 
 app = Flask(__name__)
 _sse_queues = []
 _osc_monitor_queues = []
 _history = []
 
-_agent = EOSAgent(api_key=ANTHROPIC_API_KEY) if ANTHROPIC_API_KEY else None
+_agent = LocalAgent()
 
 def claude_ask(text):
-    if not _agent:
-        return {"reply": "API ключ не задан в config.py", "cmds": []}
     result = _agent.chat(text, get_state(), _history, cue_list=get_cue_list())
     return {"reply": result["text"], "cmds": result["commands"]}
 
