@@ -56,7 +56,7 @@ PART_PATTERNS = [
     ("goto_cue",  r"(?:go\s*to\s*(?:kue|cue|куэ|кью)|(?:перейди|перейти|иди|зайди|перейд)\s*(?:на\s*)?(?:kue|cue|куэ|кью)?|на\s*кью)\s*(\d+[.,]?\d*)",
                   lambda m: "GO TO CUE {}".format(m.group(1).replace(",","."))),
     # Запись CUE
-    ("record_cue",r"(zapis|record|sohrani|запись|запис|сохрани)\s*(kue|cue|куэ|кью)?\s*(\d+[.,]?\d*)",
+    ("record_cue",r"(zapis|record|sohrani|запиши|запись|запис|сохрани)\s*(kue|cue|куэ|кью)?\s*(\d+[.,]?\d*)",
                   lambda m: "RECORD CUE {}".format(m.group(3).replace(",","."))),
     # CUE по номеру
     ("cue",       r"(kue|cue|kju|куэ|кью|кю)\s*(\d+[.,]?\d*)",

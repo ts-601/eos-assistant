@@ -5,6 +5,7 @@ from core.osc_bridge import go, stop, run_eos_cmd, get_state, on_event, on_osc_l
 from voice.parser import parse
 from config import WEB_PORT
 from agent.local_agent import LocalAgent
+from agent import brain as _brain
 
 app = Flask(__name__)
 _sse_queues = []
@@ -437,6 +438,21 @@ def monitor():
 @app.route("/")
 def index(): return render_template("index.html")
 
+@app.route("/api/brain/report")
+def api_brain_report():
+    return jsonify(_brain.get_report())
+
+@app.route("/api/brain/alerts")
+def api_brain_alerts():
+    return jsonify(_brain.get_alerts())
+
+@app.route("/api/brain/run_tests", methods=["POST"])
+def api_brain_run_tests():
+    import threading
+    threading.Thread(target=_brain._test_parser, daemon=True).start()
+    return jsonify({"ok": True})
+
 if __name__ == "__main__":
     print("\nEOS Assistant — http://localhost:" + str(WEB_PORT) + "\n")
+    _brain.start(get_state, run_eos_cmd)
     app.run(host="0.0.0.0", port=WEB_PORT, debug=False)

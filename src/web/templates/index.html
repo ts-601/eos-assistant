@@ -580,6 +580,9 @@ body { display: flex; flex-direction: column; }
   <div class="tab" onclick="showPage('chat',this)">
     <span class="ti">🎭</span><span>Шоу</span>
   </div>
+  <div class="tab" onclick="showPage('brain',this)">
+    <span class="ti">🧠</span><span>Мозг</span>
+  </div>
   <div class="tab" onclick="showPage('settings',this)">
     <span class="ti">⚙️</span><span>Настройки</span>
   </div>
@@ -815,6 +818,68 @@ body { display: flex; flex-direction: column; }
     </div>
 
   </div>
+</div>
+
+<!-- ═══ BRAIN ═══ -->
+<div id="pg-brain" class="page" style="overflow-y:auto;padding:14px;gap:12px">
+
+  <!-- Статус -->
+  <div style="background:var(--bg2);border-radius:12px;padding:14px;border:1px solid var(--border)">
+    <div style="font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">Состояние демона</div>
+    <div id="brain-status" style="font-size:13px;color:var(--text)">Загрузка…</div>
+  </div>
+
+  <!-- Алерты -->
+  <div id="brain-alerts-wrap" style="display:none;background:#1a1215;border-radius:12px;padding:14px;border:1px solid #3a2030">
+    <div style="font-size:11px;color:#a04060;text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">Предупреждения</div>
+    <div id="brain-alerts" style="font-size:13px;color:#d08090;display:flex;flex-direction:column;gap:4px"></div>
+  </div>
+
+  <!-- Тесты парсера -->
+  <div style="background:var(--bg2);border-radius:12px;padding:14px;border:1px solid var(--border)">
+    <div style="font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">Тесты парсера</div>
+    <div id="brain-tests" style="font-size:13px;color:var(--text)">—</div>
+    <div id="brain-tests-fail" style="margin-top:8px;font-size:12px;color:var(--red)"></div>
+  </div>
+
+  <!-- Статистика сегодня -->
+  <div style="background:var(--bg2);border-radius:12px;padding:14px;border:1px solid var(--border)">
+    <div style="font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">Сегодня</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">
+      <div style="background:var(--bg3);border-radius:8px;padding:8px;text-align:center">
+        <div id="brain-msgs" style="font-size:22px;font-weight:700;color:var(--accent)">—</div>
+        <div style="font-size:10px;color:var(--dim)">запросов</div>
+      </div>
+      <div style="background:var(--bg3);border-radius:8px;padding:8px;text-align:center">
+        <div id="brain-cmds" style="font-size:22px;font-weight:700;color:var(--green)">—</div>
+        <div style="font-size:10px;color:var(--dim)">команд</div>
+      </div>
+      <div style="background:var(--bg3);border-radius:8px;padding:8px;text-align:center">
+        <div id="brain-noparse" style="font-size:22px;font-weight:700;color:var(--yellow)">—</div>
+        <div style="font-size:10px;color:var(--dim)">не понял</div>
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--dim);margin-bottom:6px">Топ команд:</div>
+    <div id="brain-topcmds" style="font-size:12px;color:var(--text);display:flex;flex-direction:column;gap:3px"></div>
+  </div>
+
+  <!-- Статистика по дням -->
+  <div style="background:var(--bg2);border-radius:12px;padding:14px;border:1px solid var(--border)">
+    <div style="font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">За неделю</div>
+    <div id="brain-daily" style="font-size:12px;color:var(--text);display:flex;flex-direction:column;gap:4px"></div>
+  </div>
+
+  <!-- Кнопки управления -->
+  <div style="display:flex;gap:8px">
+    <button onclick="brainRefresh()" style="flex:1;background:var(--bg2);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:10px;font-size:13px;cursor:pointer">
+      Обновить
+    </button>
+    <button onclick="brainRunTests()" style="flex:1;background:#162a1e;border:1px solid #2a4a30;color:var(--green);border-radius:10px;padding:10px;font-size:13px;cursor:pointer">
+      Запустить тесты
+    </button>
+  </div>
+
+  <div id="brain-updated" style="font-size:10px;color:var(--dim);text-align:center"></div>
 </div>
 
 <!-- ═══ SETTINGS ═══ -->
@@ -2259,6 +2324,114 @@ async function deleteZeroChannel(channel, cues) {
   }
   alert('Готово: канал ' + channel + ' убран из ' + cues.length + ' кью');
 }
+
+// ════════════════════════════════
+//  BRAIN
+// ════════════════════════════════
+async function brainRefresh() {
+  try {
+    const [rep, alerts] = await Promise.all([
+      fetch('/api/brain/report').then(r => r.json()),
+      fetch('/api/brain/alerts').then(r => r.json()),
+    ]);
+    _brainRenderReport(rep);
+    _brainRenderAlerts(alerts);
+  } catch(e) {
+    document.getElementById('brain-status').textContent = 'Ошибка загрузки: ' + e;
+  }
+}
+
+function _brainRenderReport(r) {
+  // Статус
+  const eos = r.eos_ok ? '🟢 EOS подключён' : '🔴 EOS не подключён';
+  const show = r.show_name ? ' · Шоу: ' + r.show_name : '';
+  const disc = r.disconnect_count ? ` · Отключений: ${r.disconnect_count}` : '';
+  document.getElementById('brain-status').innerHTML =
+    `${eos}${show}${disc}<br><span style="color:var(--dim);font-size:11px">Обновлено: ${r.last_update || '—'}</span>`;
+
+  // Тесты парсера
+  if (r.parser_tests_total != null) {
+    const ok = r.parser_tests_passed === r.parser_tests_total;
+    document.getElementById('brain-tests').innerHTML =
+      `<span style="color:${ok ? 'var(--green)' : 'var(--red)'}">${r.parser_tests_passed}/${r.parser_tests_total} тестов прошло</span>` +
+      ` <span style="color:var(--dim);font-size:11px">(проверено в ${r.parser_tested_at || '—'})</span>`;
+    const failDiv = document.getElementById('brain-tests-fail');
+    if (r.parser_tests_failed && r.parser_tests_failed.length) {
+      failDiv.innerHTML = r.parser_tests_failed.map(f =>
+        `❌ "${f.input}" → ожидалось <b>${f.expected}</b>, получено <b>${f.got || 'null'}</b>`
+      ).join('<br>');
+    } else {
+      failDiv.innerHTML = '';
+    }
+  }
+
+  // Сегодня
+  document.getElementById('brain-msgs').textContent = r.today_messages ?? '—';
+  document.getElementById('brain-cmds').textContent = r.today_commands ?? '—';
+  document.getElementById('brain-noparse').textContent = r.today_no_parse ?? '—';
+
+  // Топ команд
+  const topDiv = document.getElementById('brain-topcmds');
+  if (r.top_commands && r.top_commands.length) {
+    const max = r.top_commands[0][1];
+    topDiv.innerHTML = r.top_commands.map(([cmd, cnt]) => {
+      const pct = Math.round(cnt / max * 100);
+      return `<div style="display:flex;align-items:center;gap:6px">
+        <span style="color:var(--dim);min-width:20px;text-align:right">${cnt}×</span>
+        <div style="flex:1;background:var(--bg3);border-radius:4px;height:6px">
+          <div style="width:${pct}%;background:var(--accent);border-radius:4px;height:6px"></div>
+        </div>
+        <span style="font-family:monospace;font-size:11px">${cmd}</span>
+      </div>`;
+    }).join('');
+  } else {
+    topDiv.textContent = 'Нет данных — команд ещё не было';
+  }
+
+  // По дням
+  const dailyDiv = document.getElementById('brain-daily');
+  if (r.daily_stats && Object.keys(r.daily_stats).length) {
+    dailyDiv.innerHTML = Object.entries(r.daily_stats).reverse().map(([day, d]) => {
+      const label = day.slice(0,4) + '-' + day.slice(4,6) + '-' + day.slice(6,8);
+      return `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border)">
+        <span style="color:var(--dim)">${label}</span>
+        <span>${d.messages} запросов · <span style="color:var(--green)">${d.commands} команд</span></span>
+      </div>`;
+    }).join('');
+  } else {
+    dailyDiv.textContent = 'Нет данных';
+  }
+
+  document.getElementById('brain-updated').textContent = 'Отчёт от ' + (r.analyzed_at || r.last_update || '—');
+}
+
+function _brainRenderAlerts(alerts) {
+  const wrap = document.getElementById('brain-alerts-wrap');
+  const div  = document.getElementById('brain-alerts');
+  if (!alerts || !alerts.length) { wrap.style.display = 'none'; return; }
+  wrap.style.display = '';
+  const colors = { error: '#ff6060', warning: '#ffb060', info: '#60b0ff' };
+  div.innerHTML = alerts.slice(-10).reverse().map(a =>
+    `<div>[${a.ts}] <span style="color:${colors[a.level] || '#ccc'}">${a.msg}</span></div>`
+  ).join('');
+}
+
+async function brainRunTests() {
+  document.getElementById('brain-tests').textContent = 'Запускаю тесты…';
+  await fetch('/api/brain/run_tests', { method: 'POST' }).catch(() => {});
+  setTimeout(brainRefresh, 2000);
+}
+
+// Обновляем Brain при открытии вкладки
+const _origShowPage = showPage;
+// Перехватываем переход на brain — вызываем refresh
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.tab').forEach(tab => {
+    if (tab.textContent.includes('Мозг')) {
+      tab.addEventListener('click', () => setTimeout(brainRefresh, 100));
+    }
+  });
+});
 </script>
 </body>
 </html>
