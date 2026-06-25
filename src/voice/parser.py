@@ -15,6 +15,8 @@ _WORD_NUMS = {
 def _normalize_nums(t):
     """Заменить числительные на цифры (поддержка 'три точка пять' → '3.5')."""
     t = re.sub(r'(кью|cue|kue)[-–]', r'\1 ', t, flags=re.IGNORECASE)
+    # Убираем слово "номер" перед числом: "канал номер 3" → "канал 3"
+    t = re.sub(r'\b(номер|number|№)\s*', '', t, flags=re.IGNORECASE)
     for word, digit in sorted(_WORD_NUMS.items(), key=lambda x: -len(x[0])):
         t = re.sub(r'\b' + word + r'\b', digit, t, flags=re.IGNORECASE)
     t = re.sub(r'(\d+)\s*(?:точка|\.)\s*(\d+)', r'\1.\2', t)
@@ -100,7 +102,7 @@ PART_PATTERNS = [
 
     # PARK CHAN — паркинг, обязательно до "chan" чтобы не урезать
     ("park",
-     r"(park|парк[ауни]+|паркуй|паркани)\s*(?:канал|chan|channel)?\s*(\d+)",
+     r"(park|запорку\w*|парку\w+|паркан\w+|парк[ауни]*)\s*(?:канал|chan|channel)?\s*(\d+)",
      lambda m: "PARK CHAN {}".format(m.group(2))),
 
     # CHAN THRU: "канал 1 по 10" / "канал 1 thru 10"
