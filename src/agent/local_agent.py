@@ -14,12 +14,19 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 from voice.parser import parse as _parse_cmd
 import agent.sandbox as sandbox
 
-AGENT_DIR = Path(__file__).parent
-MEMORY_DIR = AGENT_DIR / "memory"
+AGENT_DIR   = Path(__file__).parent
+MEMORY_DIR  = AGENT_DIR / "memory"
+FIXTURES_DIR = AGENT_DIR.parent.parent / "fixtures"
 
 # ─── Фразы подтверждения ──────────────────────────────────────────────────────
 _CONFIRM_YES = re.compile(r'\b(да|yes|подтвер|ок|ok|точно|давай|конечно|yep|угу)\b', re.I)
 _CONFIRM_NO  = re.compile(r'\b(нет|no|отмен|стоп|не надо|cancel|назад)\b', re.I)
+
+# ─── Паттерны запросов шаблонов/профилей ─────────────────────────────────────
+_Q_FIXTURE = re.compile(
+    r'(шаблон|профиль|fixture|gdtf|ma2|найди|есть ли|поищи|profile|library|библиотек)',
+    re.I
+)
 
 # ─── Паттерны вопросов о состоянии пульта ────────────────────────────────────
 _Q_CURRENT_CUE = re.compile(r'(какое|текущее|сейчас|активн).{0,20}(кью|cue|куэ)', re.I)
@@ -31,6 +38,18 @@ _Q_MANUAL_CHAN = re.compile(r'(мануальн|manual).{0,15}(канал|chan)'
 # ─── Паттерны опасных команд (требуют подтверждения) ─────────────────────────
 _DANGEROUS = re.compile(r'\b(удал[иь]|delete|стер[иь]|убер[иь]|убра[тьи])\b', re.I)
 _DELETE_CUE = re.compile(r'(?:удал[иь]|delete)\s*(?:кью|cue|куэ|kue)?\s*(\d+[\.,]?\d*)', re.I)
+
+
+def _file_matches(filename: str, keywords: list) -> bool:
+    # Нормализуем: убираем разделители, сравниваем и слитно и раздельно
+    name  = filename.lower().replace('_', ' ').replace('@', ' ').replace('-', ' ').replace('%40', ' ')
+    name2 = re.sub(r'\s+', '', name)  # слитно: "light sky" → "lightsky"
+    for k in keywords:
+        k = k.lower()
+        k2 = re.sub(r'\s+', '', k)
+        if k in name or k2 in name2 or k in name2:
+            return True
+    return False
 
 
 class LocalAgent:
@@ -74,7 +93,13 @@ class LocalAgent:
             self._log(text, reply, [cmd])
             return {"text": reply, "commands": [cmd], "needs_confirm": False}
 
-        # 5. Не понял
+        # 5. Попробуем найти в библиотеке шаблонов (вдруг написали название прибора)
+        fixture_reply = self._search_fixtures(text)
+        if fixture_reply and "нет профилей" not in fixture_reply and "не найдена" not in fixture_reply:
+            self._log(text, fixture_reply, [])
+            return {"text": fixture_reply, "commands": [], "needs_confirm": False}
+
+        # 6. Не понял
         reply = self._not_understood(text)
         self._log(text, reply, [])
         return {"text": reply, "commands": [], "needs_confirm": False}
@@ -121,7 +146,69 @@ class LocalAgent:
             lines = [f"Канал {ch}: {v}%" for ch, v in sorted(chans.items(), key=lambda x: int(x[0]))]
             return "Мануальные каналы:\n" + "\n".join(lines)
 
+        # Поиск шаблонов/профилей приборов
+        if _Q_FIXTURE.search(text):
+            return self._search_fixtures(text)
+
         return None
+
+    # ─── Поиск шаблонов приборов ──────────────────────────────────────────────
+
+    def _search_fixtures(self, text: str) -> str:
+        if not FIXTURES_DIR.exists():
+            return "Папка fixtures/ не найдена в проекте."
+
+        # Извлекаем ключевые слова из запроса (убираем служебные слова)
+        stop = r'\b(шаблон|профиль|fixture|gdtf|ma2|найди|есть|ли|поищи|profile|для|под|прибор|есть ли|библиотек\w*)\b'
+        query = re.sub(stop, '', text, flags=re.I).strip()
+        keywords = [w for w in re.split(r'\W+', query) if len(w) > 2]
+
+        # Общий вопрос "что есть / покажи библиотеку"
+        if not keywords or re.search(r'\b(что|все|весь|список|покажи|библиотек)\b', text, re.I):
+            return self._fixtures_summary()
+
+        # Ищем по всем файлам в fixtures/
+        gdtf_matches, ma2_matches = [], []
+
+        for f in FIXTURES_DIR.glob("GDTF/**/*"):
+            if f.is_file() and _file_matches(f.name, keywords):
+                gdtf_matches.append(f.name)
+
+        for f in FIXTURES_DIR.glob("MA2_Profiles/**/*.xml"):
+            if _file_matches(f.name, keywords):
+                ma2_matches.append(f.relative_to(FIXTURES_DIR / "MA2_Profiles"))
+
+        if not gdtf_matches and not ma2_matches:
+            return (
+                f"В библиотеке нет профилей для **{' '.join(keywords)}**.\n\n"
+                "Алгоритм поиска:\n"
+                "1. EOS: fixture-library-hub.etcconnect.com\n"
+                "2. GDTF Share: gdtf-share.com (искать под точным именем производителя)\n"
+                "3. Сайт производителя → MA Share\n\n"
+                "Скажи мне название прибора — помогу найти или сгенерировать профиль."
+            )
+
+        lines = []
+        if gdtf_matches:
+            lines.append("**GDTF для EOS:**")
+            for f in gdtf_matches:
+                lines.append(f"  📄 {f}")
+        if ma2_matches:
+            lines.append("**MA2 XML профили:**")
+            for f in ma2_matches:
+                lines.append(f"  📄 {f}")
+
+        lines.append(f"\n_Файлы в `fixtures/` в репозитории_")
+        return "\n".join(lines)
+
+    def _fixtures_summary(self) -> str:
+        gdtf = list(FIXTURES_DIR.glob("GDTF/**/*"))
+        gdtf = [f for f in gdtf if f.is_file()]
+        ma2  = list(FIXTURES_DIR.glob("MA2_Profiles/**/*.xml"))
+        return (
+            f"В библиотеке: **{len(gdtf)} GDTF** файлов и **{len(ma2)} MA2** профилей.\n"
+            "Напиши название прибора — найду что есть."
+        )
 
     # ─── Опасные команды ──────────────────────────────────────────────────────
 
@@ -168,6 +255,7 @@ class LocalAgent:
 
     # ─── Логирование ──────────────────────────────────────────────────────────
 
+
     def _log(self, user_msg: str, reply: str, commands: list):
         entry = {
             "ts": datetime.now().isoformat(),
@@ -181,7 +269,7 @@ class LocalAgent:
         with open(log_path, "a", encoding="utf-8") as f:
             f.write(json.dumps(entry, ensure_ascii=False) + "\n")
 
-    def save_solution(self, title: str, problem: str, solution: str):
+    def save_solution(self, title: str, problem: str, solution: str):  # noqa
         pass  # заглушка — локальный агент не использует solutions
 
     def reload_knowledge(self):
