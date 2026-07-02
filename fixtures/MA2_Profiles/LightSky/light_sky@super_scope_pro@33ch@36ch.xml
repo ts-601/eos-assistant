@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="utf-8"?>
+<MA xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" majorVersion="3" minorVersion="9">
+  <FixtureType Name="Super Scope Pro" Manufacturer="Light Sky" Type="Movinglight">
+    <Modules>
+      <Module Name="33CH">
+        <ChannelType attribute="PAN" coarse="1" fine="2">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+        <ChannelType attribute="TILT" coarse="3" fine="4">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+        <ChannelType attribute="DUMMY" coarse="5" name="DeviceSet/Functions">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+        <ChannelType attribute="CYAN" coarse="6" name="Cyan">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+        <ChannelType attribute="MAGENTA" coarse="7" name="Magenta">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+        <ChannelType attribute="YELLOW" coarse="8" name="Yellow">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+        <ChannelType attribute="CW1" coarse="9" name="Virtual Colour Wheel">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+        <ChannelType attribute="GOBO1" coarse="10" name="Gobo Wheel">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+        <ChannelType attribute="GOBO1POS" coarse="11" name="Gobo Rotation">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+        <ChannelType attribute="CTO" coarse="12" name="CTO">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+        <ChannelType attribute="EFFECTS" coarse="13" name="Animation Wheel">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+        <ChannelType attribute="DUMMY" coarse="14" name="Blade A1">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+        <ChannelType attribute="DUMMY" coarse="15" name="Blade A2">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+        <ChannelType attribute="DUMMY" coarse="16" name="Blade B1">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+        <ChannelType attribute="DUMMY" coarse="17" name="Blade B2">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+        <ChannelType attribute="DUMMY" coarse="18" name="Blade C1">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+        <ChannelType attribute="DUMMY" coarse="19" name="Blade C2">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+        <ChannelType attribute="DUMMY" coarse="20" name="Blade D1">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+        <ChannelType attribute="DUMMY" coarse="21" name="Blade D2">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+        <ChannelType attribute="EFFECTS" coarse="22" name="Frame Rotation">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+        <ChannelType attribute="IRIS" coarse="23" name="Iris">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+        <ChannelType attribute="PRISM1" coarse="24" name="Prism">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+        <ChannelType attribute="FROST1" coarse="25" name="Frost">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+        <ChannelType attribute="EFFECTS" coarse="26" name="Effect Macro">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+        <ChannelType attribute="FOCUS" coarse="27" name="Focus">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+        <ChannelType attribute="ZOOM" coarse="28" name="Zoom">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+        <ChannelType attribute="SHUTTER" coarse="29" name="Strobe">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+        <ChannelType attribute="DIM" coarse="30" fine="31" name="Dimmer">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+        <ChannelType attribute="DUMMY" coarse="32" name="AutoFocus Distance">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+        <ChannelType attribute="DUMMY" coarse="33" name="AutoFocus Fine">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+      </Module>
+      <Module Name="36CH">
+        <ChannelType attribute="PAN" coarse="1" fine="2">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+        <ChannelType attribute="TILT" coarse="3" fine="4">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+        <ChannelType attribute="PTSPEED" coarse="5" name="Speed Pan/Tilt">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+        <ChannelType attribute="DUMMY" coarse="6" name="DeviceSet/Functions">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+        <ChannelType attribute="CYAN" coarse="7" name="Cyan">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+        <ChannelType attribute="MAGENTA" coarse="8" name="Magenta">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+        <ChannelType attribute="YELLOW" coarse="9" name="Yellow">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+        <ChannelType attribute="CW1" coarse="10" name="Virtual Colour Wheel">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+        <ChannelType attribute="GOBO1" coarse="11" name="Gobo Wheel">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+        <ChannelType attribute="GOBO1POS" coarse="12" name="Gobo Rotation">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+        <ChannelType attribute="CTO" coarse="13" name="CTO">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+        <ChannelType attribute="EFFECTS" coarse="14" name="Animation Wheel">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+        <ChannelType attribute="DUMMY" coarse="15" name="Blade A1">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+        <ChannelType attribute="DUMMY" coarse="16" name="Blade A2">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+        <ChannelType attribute="DUMMY" coarse="17" name="Blade B1">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+        <ChannelType attribute="DUMMY" coarse="18" name="Blade B2">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+        <ChannelType attribute="DUMMY" coarse="19" name="Blade C1">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+        <ChannelType attribute="DUMMY" coarse="20" name="Blade C2">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+        <ChannelType attribute="DUMMY" coarse="21" name="Blade D1">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+        <ChannelType attribute="DUMMY" coarse="22" name="Blade D2">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+        <ChannelType attribute="EFFECTS" coarse="23" name="Frame Rotation">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+        <ChannelType attribute="IRIS" coarse="24" name="Iris">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+        <ChannelType attribute="PRISM1" coarse="25" name="Prism">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+        <ChannelType attribute="FROST1" coarse="26" name="Frost">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+        <ChannelType attribute="EFFECTS" coarse="27" name="Effect Macro">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+        <ChannelType attribute="FOCUS" coarse="28" fine="29" name="Focus">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+        <ChannelType attribute="ZOOM" coarse="30" fine="31" name="Zoom">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+        <ChannelType attribute="SHUTTER" coarse="32" name="Strobe">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+        <ChannelType attribute="DIM" coarse="33" fine="34" name="Dimmer">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+        <ChannelType attribute="DUMMY" coarse="35" name="AutoFocus Distance">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+        <ChannelType attribute="DUMMY" coarse="36" name="AutoFocus Fine">
+          <ChannelFunction From="0" To="16777215" />
+        </ChannelType>
+      </Module>
+    </Modules>
+  </FixtureType>
+</MA>

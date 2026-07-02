@@ -1,0 +1,345 @@
+<?xml version="1.0" encoding="utf-8"?>
+<MA xmlns="http://schemas.malighting.de/grandma2/xml/MA"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://schemas.malighting.de/grandma2/xml/MA http://schemas.malighting.de/grandma2/xml/3.x.x/MA.xsd"
+    major_vers="3" minor_vers="9" stream_vers="1">
+  <FixtureType name="IL-ENERGY Wash 19 HC" mode="Pixel 76CH">
+    <InfoItems>
+      <Info type="Revision" date="2026-06-24">iLighting IL-ENERGY WASH 19HC / Pixel Engine mode / 19xLED individual RGBW control / Pixel 76CH</Info>
+    </InfoItems>
+    <short_name>ILE-W19HC</short_name>
+    <manufacturer>iLighting</manufacturer>
+    <short_manufacturer>iLighting</short_manufacturer>
+    <Modules>
+      <Module name="Pixel Module" class="None" beamtype="Wash" beam_angle="50" beam_intensity="7031">
+
+        <!-- LED 1: channels 1-4 -->
+        <ChannelType attribute="R" feature="COLOR" preset="RGB" coarse="1" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="R" attribute="R" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <ChannelType attribute="G" feature="COLOR" preset="RGB" coarse="2" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="G" attribute="G" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <ChannelType attribute="B" feature="COLOR" preset="RGB" coarse="3" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="B" attribute="B" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <ChannelType attribute="W" feature="COLOR" preset="RGB" coarse="4" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="W" attribute="W" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <!-- LED 2: channels 5-8 -->
+        <ChannelType attribute="R" feature="COLOR" preset="RGB" coarse="5" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="R" attribute="R" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <ChannelType attribute="G" feature="COLOR" preset="RGB" coarse="6" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="G" attribute="G" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <ChannelType attribute="B" feature="COLOR" preset="RGB" coarse="7" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="B" attribute="B" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <ChannelType attribute="W" feature="COLOR" preset="RGB" coarse="8" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="W" attribute="W" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <!-- LED 3: channels 9-12 -->
+        <ChannelType attribute="R" feature="COLOR" preset="RGB" coarse="9" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="R" attribute="R" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <ChannelType attribute="G" feature="COLOR" preset="RGB" coarse="10" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="G" attribute="G" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <ChannelType attribute="B" feature="COLOR" preset="RGB" coarse="11" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="B" attribute="B" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <ChannelType attribute="W" feature="COLOR" preset="RGB" coarse="12" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="W" attribute="W" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <!-- LED 4: channels 13-16 -->
+        <ChannelType attribute="R" feature="COLOR" preset="RGB" coarse="13" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="R" attribute="R" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <ChannelType attribute="G" feature="COLOR" preset="RGB" coarse="14" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="G" attribute="G" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <ChannelType attribute="B" feature="COLOR" preset="RGB" coarse="15" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="B" attribute="B" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <ChannelType attribute="W" feature="COLOR" preset="RGB" coarse="16" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="W" attribute="W" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <!-- LED 5: channels 17-20 -->
+        <ChannelType attribute="R" feature="COLOR" preset="RGB" coarse="17" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="R" attribute="R" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <ChannelType attribute="G" feature="COLOR" preset="RGB" coarse="18" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="G" attribute="G" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <ChannelType attribute="B" feature="COLOR" preset="RGB" coarse="19" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="B" attribute="B" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <ChannelType attribute="W" feature="COLOR" preset="RGB" coarse="20" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="W" attribute="W" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <!-- LED 6: channels 21-24 -->
+        <ChannelType attribute="R" feature="COLOR" preset="RGB" coarse="21" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="R" attribute="R" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <ChannelType attribute="G" feature="COLOR" preset="RGB" coarse="22" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="G" attribute="G" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <ChannelType attribute="B" feature="COLOR" preset="RGB" coarse="23" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="B" attribute="B" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <ChannelType attribute="W" feature="COLOR" preset="RGB" coarse="24" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="W" attribute="W" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <!-- LED 7: channels 25-28 -->
+        <ChannelType attribute="R" feature="COLOR" preset="RGB" coarse="25" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="R" attribute="R" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <ChannelType attribute="G" feature="COLOR" preset="RGB" coarse="26" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="G" attribute="G" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <ChannelType attribute="B" feature="COLOR" preset="RGB" coarse="27" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="B" attribute="B" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <ChannelType attribute="W" feature="COLOR" preset="RGB" coarse="28" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="W" attribute="W" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <!-- LED 8: channels 29-32 -->
+        <ChannelType attribute="R" feature="COLOR" preset="RGB" coarse="29" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="R" attribute="R" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <ChannelType attribute="G" feature="COLOR" preset="RGB" coarse="30" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="G" attribute="G" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <ChannelType attribute="B" feature="COLOR" preset="RGB" coarse="31" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="B" attribute="B" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <ChannelType attribute="W" feature="COLOR" preset="RGB" coarse="32" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="W" attribute="W" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <!-- LED 9: channels 33-36 -->
+        <ChannelType attribute="R" feature="COLOR" preset="RGB" coarse="33" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="R" attribute="R" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <ChannelType attribute="G" feature="COLOR" preset="RGB" coarse="34" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="G" attribute="G" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <ChannelType attribute="B" feature="COLOR" preset="RGB" coarse="35" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="B" attribute="B" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <ChannelType attribute="W" feature="COLOR" preset="RGB" coarse="36" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="W" attribute="W" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <!-- LED 10: channels 37-40 -->
+        <ChannelType attribute="R" feature="COLOR" preset="RGB" coarse="37" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="R" attribute="R" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <ChannelType attribute="G" feature="COLOR" preset="RGB" coarse="38" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="G" attribute="G" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <ChannelType attribute="B" feature="COLOR" preset="RGB" coarse="39" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="B" attribute="B" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <ChannelType attribute="W" feature="COLOR" preset="RGB" coarse="40" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="W" attribute="W" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <!-- LED 11: channels 41-44 -->
+        <ChannelType attribute="R" feature="COLOR" preset="RGB" coarse="41" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="R" attribute="R" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <ChannelType attribute="G" feature="COLOR" preset="RGB" coarse="42" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="G" attribute="G" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <ChannelType attribute="B" feature="COLOR" preset="RGB" coarse="43" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="B" attribute="B" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <ChannelType attribute="W" feature="COLOR" preset="RGB" coarse="44" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="W" attribute="W" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <!-- LED 12: channels 45-48 -->
+        <ChannelType attribute="R" feature="COLOR" preset="RGB" coarse="45" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="R" attribute="R" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <ChannelType attribute="G" feature="COLOR" preset="RGB" coarse="46" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="G" attribute="G" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <ChannelType attribute="B" feature="COLOR" preset="RGB" coarse="47" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="B" attribute="B" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <ChannelType attribute="W" feature="COLOR" preset="RGB" coarse="48" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="W" attribute="W" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <!-- LED 13: channels 49-52 -->
+        <ChannelType attribute="R" feature="COLOR" preset="RGB" coarse="49" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="R" attribute="R" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <ChannelType attribute="G" feature="COLOR" preset="RGB" coarse="50" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="G" attribute="G" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <ChannelType attribute="B" feature="COLOR" preset="RGB" coarse="51" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="B" attribute="B" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <ChannelType attribute="W" feature="COLOR" preset="RGB" coarse="52" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="W" attribute="W" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <!-- LED 14: channels 53-56 -->
+        <ChannelType attribute="R" feature="COLOR" preset="RGB" coarse="53" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="R" attribute="R" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <ChannelType attribute="G" feature="COLOR" preset="RGB" coarse="54" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="G" attribute="G" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <ChannelType attribute="B" feature="COLOR" preset="RGB" coarse="55" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="B" attribute="B" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <ChannelType attribute="W" feature="COLOR" preset="RGB" coarse="56" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="W" attribute="W" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <!-- LED 15: channels 57-60 -->
+        <ChannelType attribute="R" feature="COLOR" preset="RGB" coarse="57" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="R" attribute="R" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <ChannelType attribute="G" feature="COLOR" preset="RGB" coarse="58" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="G" attribute="G" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <ChannelType attribute="B" feature="COLOR" preset="RGB" coarse="59" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="B" attribute="B" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <ChannelType attribute="W" feature="COLOR" preset="RGB" coarse="60" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="W" attribute="W" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <!-- LED 16: channels 61-64 -->
+        <ChannelType attribute="R" feature="COLOR" preset="RGB" coarse="61" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="R" attribute="R" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <ChannelType attribute="G" feature="COLOR" preset="RGB" coarse="62" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="G" attribute="G" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <ChannelType attribute="B" feature="COLOR" preset="RGB" coarse="63" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="B" attribute="B" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <ChannelType attribute="W" feature="COLOR" preset="RGB" coarse="64" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="W" attribute="W" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <!-- LED 17: channels 65-68 -->
+        <ChannelType attribute="R" feature="COLOR" preset="RGB" coarse="65" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="R" attribute="R" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <ChannelType attribute="G" feature="COLOR" preset="RGB" coarse="66" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="G" attribute="G" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <ChannelType attribute="B" feature="COLOR" preset="RGB" coarse="67" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="B" attribute="B" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <ChannelType attribute="W" feature="COLOR" preset="RGB" coarse="68" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="W" attribute="W" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <!-- LED 18: channels 69-72 -->
+        <ChannelType attribute="R" feature="COLOR" preset="RGB" coarse="69" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="R" attribute="R" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <ChannelType attribute="G" feature="COLOR" preset="RGB" coarse="70" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="G" attribute="G" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <ChannelType attribute="B" feature="COLOR" preset="RGB" coarse="71" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="B" attribute="B" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <ChannelType attribute="W" feature="COLOR" preset="RGB" coarse="72" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="W" attribute="W" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <!-- LED 19: channels 73-76 -->
+        <ChannelType attribute="R" feature="COLOR" preset="RGB" coarse="73" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="R" attribute="R" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <ChannelType attribute="G" feature="COLOR" preset="RGB" coarse="74" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="G" attribute="G" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <ChannelType attribute="B" feature="COLOR" preset="RGB" coarse="75" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="B" attribute="B" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+        <ChannelType attribute="W" feature="COLOR" preset="RGB" coarse="76" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="W" attribute="W" feature="COLOR" preset="RGB"/>
+        </ChannelType>
+      </Module>
+    </Modules>
+    <Instances>
+      <Instance module_index="0" patch="1" locked="true"/>
+    </Instances>
+  </FixtureType>
+</MA>

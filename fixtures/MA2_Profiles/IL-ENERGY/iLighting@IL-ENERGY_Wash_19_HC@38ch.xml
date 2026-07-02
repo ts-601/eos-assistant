@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="utf-8"?>
+<MA xmlns="http://schemas.malighting.de/grandma2/xml/MA"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://schemas.malighting.de/grandma2/xml/MA http://schemas.malighting.de/grandma2/xml/3.x.x/MA.xsd"
+    major_vers="3" minor_vers="9" stream_vers="1">
+  <FixtureType name="IL-ENERGY Wash 19 HC" mode="Extended 38CH">
+    <InfoItems>
+      <Info type="Revision" date="2026-06-24">iLighting IL-ENERGY WASH 19HC / 19x40W RGB+WW CRI95.8 / Pan540 Tilt265 Zoom4-50 / Extended 38CH</Info>
+    </InfoItems>
+    <short_name>ILE-W19HC</short_name>
+    <manufacturer>iLighting</manufacturer>
+    <short_manufacturer>iLighting</short_manufacturer>
+    <Modules>
+      <Module name="Main Module" class="Moving" beamtype="Wash" beam_angle="50" beam_intensity="7031">
+
+        <!-- PAN -->
+        <ChannelType attribute="PAN" feature="POSITION" preset="PAN_TILT" coarse="1" fine="2" highlight_value="8388608" default_value="8388608">
+          <ChannelFunction physfrom="-270" physto="270" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="PAN" attribute="PAN"
+                           feature="POSITION" preset="PAN_TILT">
+            <ChannelSet name="Center" dmx_from="8388608" to_dmx="8388608"/>
+          </ChannelFunction>
+        </ChannelType>
+        <!-- TILT -->
+        <ChannelType attribute="TILT" feature="POSITION" preset="PAN_TILT" coarse="3" fine="4" highlight_value="8388608" default_value="8388608">
+          <ChannelFunction physfrom="-132" physto="133" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="TILT" attribute="TILT"
+                           feature="POSITION" preset="PAN_TILT">
+            <ChannelSet name="Center" dmx_from="8388608" to_dmx="8388608"/>
+          </ChannelFunction>
+        </ChannelType>
+        <!-- PTSPEED -->
+        <ChannelType attribute="PTSPEED" feature="POSITION" preset="PAN_TILT" coarse="5" highlight_value="16711680" default_value="0">
+          <ChannelFunction physfrom="100" physto="0" min_dmx_24="0" max_dmx_24="16711680"
+                           subattribute="PTSPEED" attribute="PTSPEED"
+                           feature="POSITION" preset="PAN_TILT">
+            <ChannelSet name="Fast" dmx_from="0" to_dmx="65536"/>
+            <ChannelSet name="Slow" dmx_from="16646144" to_dmx="16711680"/>
+          </ChannelFunction>
+        </ChannelType>
+        <!-- DIM -->
+        <ChannelType attribute="DIM" feature="INTENSITY" preset="DIMMER" coarse="6" fine="7" highlight_value="16777215" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="DIM" attribute="DIM"
+                           feature="INTENSITY" preset="DIMMER">
+          </ChannelFunction>
+        </ChannelType>
+        <!-- SHUTTER -->
+        <ChannelType attribute="SHUTTER" feature="SHUTTER_STROBE" preset="SHUTTER" coarse="8" highlight_value="16711680" default_value="16711680">
+          <ChannelFunction physfrom="0" physto="0" min_dmx_24="0" max_dmx_24="65536"
+                           subattribute="SHUTTER" attribute="SHUTTER"
+                           feature="SHUTTER_STROBE" preset="SHUTTER">
+            <ChannelSet name="Closed" dmx_from="0" to_dmx="65536"/>
+            <ChannelSet name="Open" dmx_from="16515072" to_dmx="16777215"/>
+          </ChannelFunction>
+          <ChannelFunction physfrom="0" physto="30" min_dmx_24="131072" max_dmx_24="4128767"
+                           subattribute="SHUTTER" attribute="STROBE"
+                           feature="SHUTTER_STROBE" preset="SHUTTER">
+            <ChannelSet name="Strobe Slow" dmx_from="131072" to_dmx="131072"/>
+            <ChannelSet name="Strobe Fast" dmx_from="4063232" to_dmx="4063232"/>
+          </ChannelFunction>
+          <ChannelFunction physfrom="0" physto="30" min_dmx_24="12517376" max_dmx_24="16515071"
+                           subattribute="SHUTTER" attribute="STROBE"
+                           feature="SHUTTER_STROBE" preset="SHUTTER">
+            <ChannelSet name="Random Slow" dmx_from="12517376" to_dmx="12517376"/>
+            <ChannelSet name="Random Fast" dmx_from="16449536" to_dmx="16449536"/>
+          </ChannelFunction>
+        </ChannelType>
+        <!-- R -->
+        <ChannelType attribute="R" feature="COLOR" preset="RGB" coarse="9" fine="10" highlight_value="16777215" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="R" attribute="R"
+                           feature="COLOR" preset="RGB">
+          </ChannelFunction>
+        </ChannelType>
+        <!-- G -->
+        <ChannelType attribute="G" feature="COLOR" preset="RGB" coarse="11" fine="12" highlight_value="16777215" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="G" attribute="G"
+                           feature="COLOR" preset="RGB">
+          </ChannelFunction>
+        </ChannelType>
+        <!-- B -->
+        <ChannelType attribute="B" feature="COLOR" preset="RGB" coarse="13" fine="14" highlight_value="16777215" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="B" attribute="B"
+                           feature="COLOR" preset="RGB">
+          </ChannelFunction>
+        </ChannelType>
+        <!-- W - Warm White (HC) -->
+        <ChannelType attribute="W" feature="COLOR" preset="RGB" coarse="15" fine="16" highlight_value="16777215" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="W" attribute="W"
+                           feature="COLOR" preset="RGB">
+          </ChannelFunction>
+        </ChannelType>
+        <!-- COLOR MACRO (incl. CCT presets) -->
+        <ChannelType attribute="CW1" feature="COLOR" preset="COLORWHEEL" coarse="17" highlight_value="0" default_value="0">
+          <ChannelFunction physfrom="0" physto="255" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="CW1" attribute="CW1"
+                           feature="COLOR" preset="COLORWHEEL">
+            <ChannelSet name="No Macro" dmx_from="0" to_dmx="917503"/>
+            <ChannelSet name="Cyan" dmx_from="917504" to_dmx="1048575"/>
+            <ChannelSet name="Magenta" dmx_from="1048576" to_dmx="1179647"/>
+            <ChannelSet name="Yellow" dmx_from="1179648" to_dmx="1310719"/>
+            <ChannelSet name="Dirty White" dmx_from="1310720" to_dmx="1441791"/>
+            <ChannelSet name="Alice Blue" dmx_from="1441792" to_dmx="1572863"/>
+            <ChannelSet name="Congo Blue" dmx_from="1572864" to_dmx="1703935"/>
+            <ChannelSet name="Dark Steel Blue" dmx_from="1703936" to_dmx="1835007"/>
+            <ChannelSet name="Deep Lavender" dmx_from="1835008" to_dmx="1966079"/>
+            <ChannelSet name="Lilac Tint" dmx_from="1966080" to_dmx="2097151"/>
+            <ChannelSet name="Bastard Amber" dmx_from="2359296" to_dmx="2490367"/>
+            <ChannelSet name="Deep Orange" dmx_from="2490368" to_dmx="2621439"/>
+            <ChannelSet name="2500K" dmx_from="14155776" to_dmx="14286847"/>
+            <ChannelSet name="2800K" dmx_from="14286848" to_dmx="14417919"/>
+            <ChannelSet name="3000K" dmx_from="14417920" to_dmx="14548991"/>
+            <ChannelSet name="3200K" dmx_from="14548992" to_dmx="14680063"/>
+            <ChannelSet name="3400K" dmx_from="14680064" to_dmx="14811135"/>
+            <ChannelSet name="4000K" dmx_from="15073280" to_dmx="15204351"/>
+            <ChannelSet name="5000K" dmx_from="15728640" to_dmx="15859711"/>
+            <ChannelSet name="6000K" dmx_from="16252928" to_dmx="16383999"/>
+          </ChannelFunction>
+        </ChannelType>
+        <!-- CTO - linear CTO (cool to warm) -->
+        <ChannelType attribute="CTO" feature="COLOR" preset="COLOR" coarse="18" highlight_value="0" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16711680"
+                           subattribute="CTO" attribute="CTO"
+                           feature="COLOR" preset="COLOR">
+          </ChannelFunction>
+        </ChannelType>
+        <!-- ZOOM -->
+        <ChannelType attribute="ZOOM" feature="BEAM" preset="ZOOM" coarse="19" fine="20" highlight_value="0" default_value="0">
+          <ChannelFunction physfrom="4" physto="50" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="ZOOM" attribute="ZOOM"
+                           feature="BEAM" preset="ZOOM">
+            <ChannelSet name="Wide 50deg" dmx_from="16711680" to_dmx="16711680"/>
+            <ChannelSet name="Narrow 4deg" dmx_from="0" to_dmx="0"/>
+          </ChannelFunction>
+        </ChannelType>
+        <!-- DUMMY: Crossfade Pixel Engine -->
+        <ChannelType attribute="DUMMY" feature="CONTROL" preset="NONE" coarse="21" highlight_value="0" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16711680"
+                           subattribute="DUMMY" attribute="DUMMY"
+                           feature="CONTROL" preset="NONE">
+            <ChannelSet name="Off" dmx_from="0" to_dmx="0"/>
+            <ChannelSet name="Full" dmx_from="16711680" to_dmx="16711680"/>
+          </ChannelFunction>
+        </ChannelType>
+        <!-- CONTROL -->
+        <ChannelType attribute="DUMMY" feature="CONTROL" preset="NONE" coarse="23" highlight_value="0" default_value="0">
+          <ChannelFunction physfrom="0" physto="255" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="DUMMY" attribute="DUMMY"
+                           feature="CONTROL" preset="NONE">
+            <ChannelSet name="No function" dmx_from="0" to_dmx="393215"/>
+            <ChannelSet name="Pan Rev On" dmx_from="393216" to_dmx="524287"/>
+            <ChannelSet name="Pan Rev Off" dmx_from="524288" to_dmx="655359"/>
+            <ChannelSet name="Tilt Rev On" dmx_from="655360" to_dmx="786431"/>
+            <ChannelSet name="Tilt Rev Off" dmx_from="786432" to_dmx="917503"/>
+            <ChannelSet name="P/T Fast" dmx_from="917504" to_dmx="1048575"/>
+            <ChannelSet name="P/T Medium" dmx_from="1048576" to_dmx="1179647"/>
+            <ChannelSet name="P/T Slow" dmx_from="1179648" to_dmx="1310719"/>
+            <ChannelSet name="Fan Auto" dmx_from="2752512" to_dmx="2883583"/>
+            <ChannelSet name="Fan Silent" dmx_from="2883584" to_dmx="3014655"/>
+            <ChannelSet name="Fan High" dmx_from="3014656" to_dmx="3145727"/>
+            <ChannelSet name="Fan Super Silent" dmx_from="3145728" to_dmx="3276799"/>
+          </ChannelFunction>
+        </ChannelType>
+        <!-- CONTROL RESET -->
+        <ChannelType attribute="DUMMY" feature="CONTROL" preset="NONE" coarse="24" highlight_value="0" default_value="0">
+          <ChannelFunction physfrom="0" physto="255" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="DUMMY" attribute="DUMMY"
+                           feature="CONTROL" preset="NONE">
+            <ChannelSet name="No function" dmx_from="0" to_dmx="131071"/>
+            <ChannelSet name="Reset All" dmx_from="131072" to_dmx="262143"/>
+            <ChannelSet name="Reset Pan/Tilt" dmx_from="262144" to_dmx="393215"/>
+            <ChannelSet name="Reset Zoom" dmx_from="393216" to_dmx="524287"/>
+            <ChannelSet name="Factory Default" dmx_from="16646144" to_dmx="16777215"/>
+          </ChannelFunction>
+        </ChannelType>
+        <!-- DUMMY: Crossfade White to Color -->
+        <ChannelType attribute="DUMMY" feature="CONTROL" preset="NONE" coarse="22" highlight_value="0" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16711680"
+                           subattribute="DUMMY" attribute="DUMMY"
+                           feature="CONTROL" preset="NONE">
+            <ChannelSet name="White" dmx_from="0" to_dmx="0"/>
+            <ChannelSet name="Color" dmx_from="16711680" to_dmx="16711680"/>
+          </ChannelFunction>
+        </ChannelType>
+        <!-- DUMMY - CTO on Colors -->
+        <ChannelType attribute="DUMMY" feature="COLOR" preset="NONE" coarse="25" highlight_value="0" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16711680"
+                           subattribute="DUMMY" attribute="DUMMY"
+                           feature="COLOR" preset="NONE">
+          </ChannelFunction>
+        </ChannelType>
+        <!-- TINT -->
+        <ChannelType attribute="DUMMY" feature="COLOR" preset="NONE" coarse="26" highlight_value="8388608" default_value="8388608">
+          <ChannelFunction physfrom="-25" physto="25" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="DUMMY" attribute="DUMMY"
+                           feature="COLOR" preset="NONE">
+            <ChannelSet name="-25" dmx_from="65536" to_dmx="65536"/>
+            <ChannelSet name="0" dmx_from="8388608" to_dmx="8388608"/>
+            <ChannelSet name="+25" dmx_from="16711680" to_dmx="16711680"/>
+          </ChannelFunction>
+        </ChannelType>
+        <!-- PATTERN (Effects) -->
+        <ChannelType attribute="EFFECTS" feature="BEAM" preset="EFFECTS" coarse="27" highlight_value="0" default_value="0">
+          <ChannelFunction physfrom="0" physto="255" min_dmx_24="0" max_dmx_24="16777215"
+                           subattribute="EFFECTS" attribute="EFFECTS"
+                           feature="BEAM" preset="EFFECTS">
+            <ChannelSet name="No FX" dmx_from="0" to_dmx="1114111"/>
+            <ChannelSet name="FX 1" dmx_from="1114112" to_dmx="1507327"/>
+            <ChannelSet name="FX 2" dmx_from="1507328" to_dmx="1900543"/>
+            <ChannelSet name="FX 3" dmx_from="1900544" to_dmx="2293759"/>
+            <ChannelSet name="FX 4" dmx_from="2293760" to_dmx="2686975"/>
+            <ChannelSet name="FX 5" dmx_from="2686976" to_dmx="3080191"/>
+            <ChannelSet name="FX 10" dmx_from="4653056" to_dmx="5046271"/>
+            <ChannelSet name="FX 20" dmx_from="8585216" to_dmx="8978431"/>
+            <ChannelSet name="FX 30" dmx_from="12517376" to_dmx="12910591"/>
+            <ChannelSet name="FX 40" dmx_from="16449536" to_dmx="16777215"/>
+          </ChannelFunction>
+        </ChannelType>
+        <!-- DUMMY: Pattern Speed -->
+        <ChannelType attribute="DUMMY" feature="CONTROL" preset="NONE" coarse="28" highlight_value="0" default_value="8388608">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16711680"
+                           subattribute="DUMMY" attribute="DUMMY"
+                           feature="CONTROL" preset="NONE">
+          </ChannelFunction>
+        </ChannelType>
+        <!-- DUMMY: Pattern Fade -->
+        <ChannelType attribute="DUMMY" feature="CONTROL" preset="NONE" coarse="29" highlight_value="0" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16711680"
+                           subattribute="DUMMY" attribute="DUMMY"
+                           feature="CONTROL" preset="NONE">
+          </ChannelFunction>
+        </ChannelType>
+        <!-- DUMMY: Pattern Transition -->
+        <ChannelType attribute="DUMMY" feature="CONTROL" preset="NONE" coarse="30" highlight_value="0" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16711680"
+                           subattribute="DUMMY" attribute="DUMMY"
+                           feature="CONTROL" preset="NONE">
+          </ChannelFunction>
+        </ChannelType>
+        <!-- DUMMY: Foreground Intensity -->
+        <ChannelType attribute="DUMMY" feature="CONTROL" preset="NONE" coarse="31" highlight_value="0" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16711680"
+                           subattribute="DUMMY" attribute="DUMMY"
+                           feature="CONTROL" preset="NONE">
+          </ChannelFunction>
+        </ChannelType>
+        <!-- DUMMY: Foreground Strobe -->
+        <ChannelType attribute="DUMMY" feature="CONTROL" preset="NONE" coarse="32" highlight_value="0" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16711680"
+                           subattribute="DUMMY" attribute="DUMMY"
+                           feature="CONTROL" preset="NONE">
+          </ChannelFunction>
+        </ChannelType>
+        <!-- DUMMY: Background Intensity -->
+        <ChannelType attribute="DUMMY" feature="CONTROL" preset="NONE" coarse="33" highlight_value="0" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16711680"
+                           subattribute="DUMMY" attribute="DUMMY"
+                           feature="CONTROL" preset="NONE">
+          </ChannelFunction>
+        </ChannelType>
+        <!-- DUMMY: Background Strobe -->
+        <ChannelType attribute="DUMMY" feature="CONTROL" preset="NONE" coarse="34" highlight_value="0" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16711680"
+                           subattribute="DUMMY" attribute="DUMMY"
+                           feature="CONTROL" preset="NONE">
+          </ChannelFunction>
+        </ChannelType>
+        <!-- DUMMY: Background Red -->
+        <ChannelType attribute="DUMMY" feature="CONTROL" preset="NONE" coarse="35" highlight_value="0" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16711680"
+                           subattribute="DUMMY" attribute="DUMMY"
+                           feature="CONTROL" preset="NONE">
+          </ChannelFunction>
+        </ChannelType>
+        <!-- DUMMY: Background Green -->
+        <ChannelType attribute="DUMMY" feature="CONTROL" preset="NONE" coarse="36" highlight_value="0" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16711680"
+                           subattribute="DUMMY" attribute="DUMMY"
+                           feature="CONTROL" preset="NONE">
+          </ChannelFunction>
+        </ChannelType>
+        <!-- DUMMY: Background Blue -->
+        <ChannelType attribute="DUMMY" feature="CONTROL" preset="NONE" coarse="37" highlight_value="0" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16711680"
+                           subattribute="DUMMY" attribute="DUMMY"
+                           feature="CONTROL" preset="NONE">
+          </ChannelFunction>
+        </ChannelType>
+        <!-- DUMMY: Background White -->
+        <ChannelType attribute="DUMMY" feature="CONTROL" preset="NONE" coarse="38" highlight_value="0" default_value="0">
+          <ChannelFunction physfrom="0" physto="100" min_dmx_24="0" max_dmx_24="16711680"
+                           subattribute="DUMMY" attribute="DUMMY"
+                           feature="CONTROL" preset="NONE">
+          </ChannelFunction>
+        </ChannelType>
+      </Module>
+    </Modules>
+    <Instances>
+      <Instance module_index="0" patch="1" locked="true"/>
+    </Instances>
+  </FixtureType>
+</MA>
